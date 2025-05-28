@@ -9,7 +9,7 @@ export default interface RoomState {
   currentClue: string | null;
 }
 
-export const DEFAULT_ROOM_STATE = {
+export const DEFAULT_ROOM_STATE: RoomState = {
   name: "",
   currentTurnIndex: 0,
   currentGameMasterIndex: 0,

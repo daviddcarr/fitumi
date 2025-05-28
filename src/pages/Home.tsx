@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { DEFAULT_ROOM_STATE } from "../lib/interfaces/room-state";
 
 export default function Home() {
   const [name, setName] = useState("");
@@ -17,11 +18,8 @@ export default function Home() {
         {
           code: roomCode,
           state: {
-            name,
-            currentTurnIndex: 0,
-            strokes: [],
-            currentClue: null,
-            currentGameMasterIndex: 0,
+            ...DEFAULT_ROOM_STATE,
+            name
           },
         },
       ])

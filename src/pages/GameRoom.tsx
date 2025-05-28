@@ -39,8 +39,11 @@ export default function GameRoom() {
     return players[state.currentTurnIndex];
   }, [players, state]);
 
+  // Room State
   useEffect(() => {
     if (!roomCode) return;
+
+    // Fetch Room
     supabase
       .from("rooms")
       .select("*")
@@ -61,6 +64,7 @@ export default function GameRoom() {
       });
   }, [roomCode]);
 
+  // Fetch Player Data
   useEffect(() => {
     if (!roomId || !playerSlug) return;
     supabase
@@ -191,7 +195,7 @@ export default function GameRoom() {
     );
   }
 
-  if (!clueSelected && !state?.currentClue && isGameMaster) {
+  if (!clueSelected && isGameMaster) {
     return (
       <div className="p-4 max-w-sm mx-auto">
         <input
@@ -200,10 +204,7 @@ export default function GameRoom() {
           className="w-full mb-3 p-2 border rounded"
           value={state?.currentClue ?? ""}
           onChange={(e) =>
-            setState({
-              ...(state ?? DEFAULT_ROOM_STATE),
-              currentClue: e.target.value,
-            })
+            setState(s => ({ ...s!, currentClue: e.target.value }))
           }
         />
         {state?.currentClue && (
