@@ -1,8 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../lib/supabaseClient";
 import CanvasBoard from "../components/CanvasBoard";
 import type RoomState from "../lib/interfaces/room-state";
+import { DEFAULT_ROOM_STATE } from "../lib/interfaces/room-state";
 
 export type Player = {
   id: string;
@@ -23,9 +24,20 @@ export default function GameRoom() {
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [name, setName] = useState<string>("");
   const [joined, setJoined] = useState<boolean>(false);
+  const [clueSelected, setClueSelected] = useState<boolean>(false);
   const [players, setPlayers] = useState<Player[]>([]);
   const [isGameMaster, setIsGameMaster] = useState<boolean>(false);
   const [state, setState] = useState<RoomState | null>(null);
+
+  const playerName = useMemo(() => {
+    if (!playerId) return "";
+    return players.find((p) => p.id === playerId)?.name ?? "";
+  }, [playerId, players]);
+
+  const currentPlayer: Player | null = useMemo(() => {
+    if (!state || !players) return null;
+    return players[state.currentTurnIndex];
+  }, [players, state]);
 
   useEffect(() => {
     if (!roomCode) return;
@@ -47,17 +59,6 @@ export default function GameRoom() {
           return;
         }
       });
-
-    // supabase
-    //     .from('players')
-    //     .select('*')
-    //     .eq('room_id', roomId)
-    //     .then(({ data, error }) => {
-    //         if (data) {
-    //             setPlayers(data)
-    //         }
-    //         if (error) console.error(error)
-    //     })
   }, [roomCode]);
 
   useEffect(() => {
@@ -106,20 +107,6 @@ export default function GameRoom() {
     }
   };
 
-  const handleKick = (p: Player) => {
-    console.log("Kicking player", p);
-    supabase
-      .from("players")
-      .delete()
-      .eq("id", p.id)
-      .then(({ error }) => {
-        if (!error) {
-          console.log("Kicked player", p);
-          setPlayers((current) => current.filter((pl) => pl.id !== p.id));
-        }
-      });
-  };
-
   useEffect(() => {
     if (!roomId) return;
     supabase
@@ -143,23 +130,7 @@ export default function GameRoom() {
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
-          console.log("Inserting player", payload.new);
           setPlayers((current) => [...current, payload.new as Player]);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "players",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          console.log("Deleting player", payload.old);
-          setPlayers((current) =>
-            current.filter((p) => p.id !== (payload.old as Player).id)
-          );
         }
       )
       .on(
@@ -171,7 +142,6 @@ export default function GameRoom() {
           filter: `id=eq.${roomId}`,
         },
         (payload) => {
-          console.log("Updating room", payload.new);
           setState(payload.new.state as RoomState);
         }
       )
@@ -183,7 +153,6 @@ export default function GameRoom() {
   }, [roomId]);
 
   useEffect(() => {
-    console.log("Players Changed", players);
     if (!playerId || players.length === 0) return;
     const sorted = [...players].sort(
       (a, b) =>
@@ -222,12 +191,44 @@ export default function GameRoom() {
     );
   }
 
+  if (!clueSelected && !state?.currentClue && isGameMaster) {
+    return (
+      <div className="p-4 max-w-sm mx-auto">
+        <input
+          type="text"
+          placeholder="Clue"
+          className="w-full mb-3 p-2 border rounded"
+          value={state?.currentClue ?? ""}
+          onChange={(e) =>
+            setState({
+              ...(state ?? DEFAULT_ROOM_STATE),
+              currentClue: e.target.value,
+            })
+          }
+        />
+        {state?.currentClue && (
+          <button
+            className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-50"
+            onClick={() => setClueSelected(true)}
+          >
+            Submit Clue
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-semibold">Room: {roomCode}</h2>
+      <h2 className="text-2xl font-semibold">Room ID: /{roomCode}</h2>
+      <h3 className="text-xl font-semibold">Room Name: {roomName}</h3>
+      <h4 className="text-lg font-semibold">Current Player: {playerName}</h4>
+      <h4 className="text-lg font-semibold">
+        Current Turn: {currentPlayer?.name}
+      </h4>
       <p className="mt-2 mb-4">Players in this room:</p>
       <ul className="space-y-2">
-        {players.map((p, i) => (
+        {players.map((p) => (
           <li key={p.id} className="flex items-center space-x-2">
             <div className="flex items-center">
               <span
@@ -237,14 +238,6 @@ export default function GameRoom() {
               <span>{p.name}</span>
               {p.is_fake_artist && <span>(FA)</span>}
             </div>
-            {isGameMaster && i !== 0 && (
-              <button
-                className="text-red-600 hover:underline text-sm"
-                onClick={() => handleKick(p)}
-              >
-                Kick
-              </button>
-            )}
           </li>
         ))}
       </ul>

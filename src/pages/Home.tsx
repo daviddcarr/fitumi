@@ -7,9 +7,10 @@ export default function Home() {
   const navigate = useNavigate();
 
   const createRoom = async () => {
-    console.log("Try creating a room");
-    const roomCode = Math.random().toString(36).substring(2, 7);
-    console.log("Room Code", roomCode);
+    const roomCode = Math.random()
+      .toString(36)
+      .substring(2, 7)
+      .toLocaleUpperCase();
     const { data, error } = await supabase
       .from("rooms")
       .insert([
@@ -19,6 +20,8 @@ export default function Home() {
             name,
             currentTurnIndex: 0,
             strokes: [],
+            currentClue: null,
+            currentGameMasterIndex: 0,
           },
         },
       ])
