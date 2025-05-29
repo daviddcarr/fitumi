@@ -6,6 +6,7 @@ import { DEFAULT_ROOM_STATE, type Point } from '../lib/interfaces/room-state'
 
 interface GameState {
     roomId: string
+    roomCode: string
     playerId: string
     players: Player[]
     state: RoomState
@@ -40,6 +41,7 @@ interface GameActions {
 
 export const useGame = create<GameState & GameActions>((set, get) => ({
     roomId: "",
+    roomCode: "",
     playerId: "",
     players: [] as Player[],
     state: DEFAULT_ROOM_STATE,
@@ -65,7 +67,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
             .eq("code", code)
             .single()
         if (error || !data) return
-        set({ roomId: data.id, state: data.state })
+        set({ roomCode: code, roomId: data.id, state: data.state })
     },
     
     join: async (name: string) => {

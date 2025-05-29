@@ -9,7 +9,8 @@ interface CanvasBoardProps {
   playerId: string;
   players: Player[];
   state: RoomState;
-  setState: (state: RoomState) => void;
+  addStroke: (points: Point[]) => Promise<void>;
+  setState?: (state: RoomState) => void;
 }
 
 export default function CanvasBoard({
@@ -17,6 +18,7 @@ export default function CanvasBoard({
   playerId,
   players,
   state,
+  addStroke,
   setState,
 }: CanvasBoardProps) {
   const { currentTurnIndex, strokes = [] } = state;
@@ -107,23 +109,9 @@ export default function CanvasBoard({
     console.log("Ending Stroke");
     setIsDrawing(false);
 
-    const newStroke: Stroke = {
-      playerId,
-      points: currentStroke,
-      color: players[currentTurnIndex].color,
-    };
-    const newRoomState: RoomState = {
-      ...state,
-      strokes: [...(strokes ?? []), newStroke],
-      currentTurnIndex: (currentTurnIndex + 1) % players.length,
-    };
-
+    await addStroke(currentStroke); 
     setCurrentStroke([]);
-    setState(newRoomState);
-    await supabase
-      .from("rooms")
-      .update({ state: newRoomState })
-      .eq("id", roomId);
+
   };
 
   return (
