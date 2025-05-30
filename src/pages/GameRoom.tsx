@@ -26,10 +26,9 @@ export default function GameRoom() {
     subscribe,
     unsubscribe,
     submitClue,
-    addStroke
-  } = useGame()
+  } = useGame();
   const navigate = useNavigate();
-  const { currentPlayer, gameMaster } = state
+  const { currentPlayer, gameMaster } = state;
 
   const [name, setName] = useState<string>("");
   const [joined, setJoined] = useState<boolean>(false);
@@ -37,22 +36,21 @@ export default function GameRoom() {
 
   // Room State
   useEffect(() => {
-    if (!roomCode) return
-    initRoom(roomCode).then(subscribe)
-    return () => unsubscribe()
-  }, [roomCode])
+    if (!roomCode) return;
+    initRoom(roomCode).then(subscribe);
+    return () => unsubscribe();
+  }, [roomCode, initRoom, subscribe, unsubscribe]);
 
   useEffect(() => {
     if (!roomId || !playerSlug) return;
     loadPlayer(roomId, playerSlug).then(() => {
       setJoined(true);
-    })
-  }, [roomId, playerSlug])
-
+    });
+  }, [roomId, playerSlug, loadPlayer]);
 
   const handleJoin = async () => {
     if (!roomId || !name.trim()) return;
-     join(name).then((newPlayer) => {
+    join(name).then((newPlayer) => {
       setJoined(true);
       navigate(`/${roomCode}/${newPlayer?.slug ?? ""}`);
     });
@@ -88,17 +86,16 @@ export default function GameRoom() {
     );
   }
 
-  if (!clueSelected && gameMaster === player) {
+  if (!clueSelected && gameMaster?.id === player?.id) {
     return (
       <div className="p-4 max-w-sm mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Submit Clue</h1>
         <input
           type="text"
           placeholder="Clue"
           className="w-full mb-3 p-2 border rounded"
           value={state?.currentClue ?? ""}
-          onChange={(e) =>
-            submitClue(e.target.value)
-          }
+          onChange={(e) => submitClue(e.target.value)}
         />
         {state?.currentClue && (
           <button
@@ -120,9 +117,7 @@ export default function GameRoom() {
       <h4 className="text-lg font-semibold">
         Current Turn: {currentPlayer?.name}
       </h4>
-      <h4>
-        Game Master: {gameMaster?.name}
-      </h4>
+      <h4>Game Master: {gameMaster?.name}</h4>
       <p className="mt-2 mb-4">Players in this room:</p>
       <ul className="space-y-2">
         {players.map((p) => (
@@ -139,9 +134,7 @@ export default function GameRoom() {
         ))}
       </ul>
 
-      {player && state && players.length > 0 && (
-        <CanvasBoard />
-      )}
+      {player && state && players.length > 0 && <CanvasBoard />}
     </div>
   );
 }

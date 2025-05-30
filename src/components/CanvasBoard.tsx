@@ -1,14 +1,13 @@
 import React, { useRef, useEffect, useState } from "react";
-import type { Point, Stroke } from "../lib/interfaces/room-state";
+import type { Point } from "../lib/interfaces/room-state";
 import { useGame } from "../stores/useGame";
-
 
 export default function CanvasBoard() {
   const { state, player, players, addStroke } = useGame();
   const { currentPlayer, strokes = [] } = state;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
 
@@ -19,13 +18,10 @@ export default function CanvasBoard() {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    console.log("Clearing Canvas");
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw Saved Strokes
-    console.log("Drawing Every Stroke");
     strokes.forEach((stroke) => {
-      console.log("Drawing Stroke", stroke);
       context.strokeStyle = stroke.color;
       context.lineWidth = 2;
       context.beginPath();
@@ -56,13 +52,8 @@ export default function CanvasBoard() {
   }, [strokes, currentStroke, players, currentPlayer]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    console.log("Trying mouse down");
-    console.log("Current Player", currentPlayer);
-    console.log("Player", player);
     if (!currentPlayer || !player) return;
-    console.log("Boop")
     if (currentPlayer.id !== player.id) return;
-    console.log("Starting Stroke");
 
     setIsDrawing(true);
     setCurrentStroke([
@@ -75,8 +66,7 @@ export default function CanvasBoard() {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!currentPlayer || !player) return;
-    if (currentPlayer !== player || !isDrawing) return;
-    console.log("Contnuing Stroke");
+    if (currentPlayer.id !== player.id || !isDrawing) return;
 
     setCurrentStroke((prevStroke) => [
       ...prevStroke,
@@ -88,14 +78,11 @@ export default function CanvasBoard() {
   };
 
   const handleMouseUp = async () => {
-    console.log("Mouse Up");
     if (!isDrawing) return;
-    console.log("Ending Stroke");
     setIsDrawing(false);
 
-    await addStroke(currentStroke); 
+    await addStroke(currentStroke);
     setCurrentStroke([]);
-
   };
 
   return (
