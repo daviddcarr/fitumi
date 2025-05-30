@@ -1,34 +1,16 @@
 import React, { useRef, useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
-import type { Player } from "../pages/GameRoom";
-import type RoomState from "../lib/interfaces/room-state";
 import type { Point, Stroke } from "../lib/interfaces/room-state";
+import { useGame } from "../stores/useGame";
 
-interface CanvasBoardProps {
-  roomId: string;
-  playerId: string;
-  players: Player[];
-  state: RoomState;
-  addStroke: (points: Point[]) => Promise<void>;
-  setState?: (state: RoomState) => void;
-}
 
-export default function CanvasBoard({
-  roomId,
-  playerId,
-  players,
-  state,
-  addStroke,
-  setState,
-}: CanvasBoardProps) {
-  const { currentTurnIndex, strokes = [] } = state;
+export default function CanvasBoard() {
+  const { state, player, players, addStroke } = useGame();
+  const { currentPlayer, strokes = [] } = state;
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
-
-  useEffect(() => {
-    console.log("State", state);
-  }, [state]);
 
   useEffect(() => {
     console.log("Attempting to Redraw");
@@ -59,7 +41,7 @@ export default function CanvasBoard({
 
     // Draw Current Strokes
     if (currentStroke.length > 0) {
-      context.strokeStyle = players[currentTurnIndex].color;
+      context.strokeStyle = currentPlayer?.color || "black";
       context.lineWidth = 2;
       context.beginPath();
       currentStroke.forEach((point, index) => {
@@ -71,12 +53,15 @@ export default function CanvasBoard({
       });
       context.stroke();
     }
-  }, [strokes, currentStroke, players, currentTurnIndex]);
+  }, [strokes, currentStroke, players, currentPlayer]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     console.log("Trying mouse down");
-    if (!players[currentTurnIndex]) return;
-    if (players[currentTurnIndex].id !== playerId) return;
+    console.log("Current Player", currentPlayer);
+    console.log("Player", player);
+    if (!currentPlayer || !player) return;
+    console.log("Boop")
+    if (currentPlayer.id !== player.id) return;
     console.log("Starting Stroke");
 
     setIsDrawing(true);
@@ -89,9 +74,8 @@ export default function CanvasBoard({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    console.log("Mouse Moving");
-    if (!players[currentTurnIndex]) return;
-    if (players[currentTurnIndex].id !== playerId || !isDrawing) return;
+    if (!currentPlayer || !player) return;
+    if (currentPlayer !== player || !isDrawing) return;
     console.log("Contnuing Stroke");
 
     setCurrentStroke((prevStroke) => [

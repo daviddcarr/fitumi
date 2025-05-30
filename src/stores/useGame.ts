@@ -7,69 +7,60 @@ import { DEFAULT_ROOM_STATE, type Point } from '../lib/interfaces/room-state'
 interface GameState {
     roomId: string
     roomCode: string
-    playerId: string
     players: Player[]
     state: RoomState
-    currentPlayer?: Player
     isGameMaster: boolean
     player?: Player
-
-
-    // roomName: string
-    // name: string
-    // clueSelected: boolean
 }
 
 interface GameActions {
     initRoom:       (code: string) => Promise<void>
-    join:           (name: string) => Promise<void>
+    join:           (name: string) => Promise<Player | null>
+    loadRoom:       (roomCode: string) => Promise<void>
+    loadPlayer:     (roomId: string, playerSlug: string) => Promise<void>
     submitClue:     (clue: string) => Promise<void>
     addStroke:      (points: Point[]) => Promise<void>
     subscribe:      () => void
     unsubscribe:    () => void
-
-    // setRoomId: (roomId: string) => void
-    // setRoomName: (roomName: string) => void
-    // setPlayerId: (playerId: string) => void
-    // setName: (name: string) => void
-    // setIsGameMaster: (isGameMaster: boolean) => void
-    // setPlayers: (players: Player[]) => void
-    // setState: (state: RoomState) => void
-    // setClueSelected: (clueSelected: boolean) => void
 }
 
 
 export const useGame = create<GameState & GameActions>((set, get) => ({
     roomId: "",
     roomCode: "",
-    playerId: "",
     players: [] as Player[],
+    player: undefined,
     state: DEFAULT_ROOM_STATE,
 
-    get currentPlayer() {
-        const idx = this.state.currentTurnIndex
-        return this.players[idx] ?? null
-    },
-
-    get player() {
-        return this.players.find(p=>p.id===this.playerId)
-    },
-
     get isGameMaster() {
-        if (!this.playerId || this.players.length === 0 || !this.currentPlayer) return false
-        return this.currentPlayer.id === this.playerId
+        if (!this.player || this.players.length === 0 || !this.state.currentPlayer) return false
+        return (this.state.currentPlayer as Player).id === (this.player as Player).id
     },
 
     initRoom: async (code: string) => {
-        const { data, error } = await supabase
+        console.log("Init Room: ", code);
+        const { data: room, error: roomError } = await supabase
             .from("rooms")
             .select('*')
             .eq("code", code)
             .single()
-        if (error || !data) return
-        set({ roomCode: code, roomId: data.id, state: data.state })
+        if (roomError || !room) return
+        set({ roomCode: code, roomId: room.id, state: room.state })
+
+        const { data: existingPlayers, error: playerError } = await supabase
+            .from("players")
+            .select('*')
+            .eq("room_id", room.id)
+            .order("created_at", { ascending: true })
+        if (playerError || !existingPlayers) return
+        set({ players: existingPlayers })
     },
     
+    /**
+     * Join a room with the given name
+     * @param name the name for the player
+     * @returns the newly created player
+     */
     join: async (name: string) => {
         const roomId = get().roomId
         if (!roomId) return
@@ -84,8 +75,51 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
             .insert([{ room_id: roomId, name, color, slug }])
             .select()
             .single()
+        if (error || !data) return null
+        set({ player: data })
+        if (get().players.length === 0 && !get().state.gameMaster) {
+            const newState = { ...get().state, gameMaster: data }
+            await supabase
+                .from("rooms")
+                .update({ state: newState })
+                .eq("id", roomId)
+            set({ state: { ...get().state, gameMaster: data } })
+        } else if (get().players.length === 1 && !get().state.currentPlayer) {
+            const newState = { ...get().state, currentPlayer: data }
+            await supabase
+                .from("rooms")
+                .update({ state: newState })
+                .eq("id", roomId)
+            set({ state: { ...get().state, currentPlayer: data } })
+        }
+        
+        return data
+    },
+
+    loadRoom: async (roomCode: string) => {
+        const { data, error } = await supabase
+            .from("rooms")
+            .select('*')
+            .eq("code", roomCode)
+            .single()
         if (error || !data) return
-        set({ playerId: data.id, player: data })
+        set({ 
+            roomId: data.id, 
+            roomCode, 
+            players: data.players, 
+            state: data.state
+        })
+    },
+
+    loadPlayer: async (roomId: string, playerSlug: string) => {
+        const { data, error } = await supabase
+            .from("players")
+            .select('*')
+            .eq("room_id", roomId)
+            .eq("slug", playerSlug)
+            .single()
+        if (error || !data) return
+        set({ player: data })
     },
 
     submitClue: async (clue: string) => {
@@ -100,15 +134,23 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     },
 
     addStroke: async (points: Point[]) => {
-        const { roomId, playerId, players, state } = get()
-        if (!roomId || !playerId || !players || !state) return
-        const color = players.find(p=>p.id===playerId)!.color
-        const newStroke = { playerId, points, color }
+        const { roomId, player, players, state } = get()
+        if (!roomId || !player || !players || !state) return
+
+        const getNextPlayer = (players: Player[], currentPlayer: Player, gameMaster: Player): Player => {
+            const nextIndex = (players.indexOf(currentPlayer) + 1) % players.length
+            return players[nextIndex] !== gameMaster ? players[nextIndex] : players[(nextIndex + 1) % players.length]
+        }
+
+        const color = players.find(p=>p.id===player.id)!.color
+        const newStroke = { playerId: player.id, points, color }
         const nextTurn  = (state.currentTurnIndex + 1) % players.length
+        const nextPlayer = getNextPlayer(players, player, state.gameMaster!)
         const newState = {
             ...state,
             strokes: [...(state.strokes ?? []), newStroke],
             currentTurnIndex: nextTurn,
+            currentPlayer: nextPlayer,
         }
         set({ state: newState })
         await supabase
@@ -140,7 +182,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
                     table: "rooms",
                     filter: `id=eq.${roomId}`,
                 },
-                payload => set(state=>({ players: state.players.filter(p=>p.id!== (payload.old as Player).id) }))
+                payload => set((state) =>({ 
+                    state: payload.new.state as RoomState,
+                    players: state.players.filter(p=>p.id!== (payload.old as Player).id) 
+                }))
       
             )
             .subscribe();
