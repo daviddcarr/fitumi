@@ -2,7 +2,12 @@ import { create } from "zustand";
 import { supabase } from "../lib/supabaseClient";
 import type { Player } from "../lib/interfaces/player";
 import type RoomState from "../lib/interfaces/room-state";
-import { DEFAULT_ROOM_STATE, type Point } from "../lib/interfaces/room-state";
+import {
+  DEFAULT_ROOM_STATE,
+  type Point,
+  type RoomStatus,
+} from "../lib/interfaces/room-state";
+import { BASIC_CLUES } from "../data/clue-sets";
 
 interface GameState {
   roomId: string;
@@ -21,6 +26,9 @@ interface GameActions {
   addStroke: (points: Point[]) => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
+  setReady: (ready: boolean) => Promise<void>;
+  startGame: () => Promise<void>;
+  setGameMaster: (player: Player | null) => Promise<void>;
 }
 
 export const useGame = create<GameState & GameActions>((set, get) => ({
@@ -92,21 +100,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     return data;
   },
 
-  //   loadRoom: async (roomCode: string) => {
-  //     const { data, error } = await supabase
-  //       .from("rooms")
-  //       .select("*")
-  //       .eq("code", roomCode)
-  //       .single();
-  //     if (error || !data) return;
-  //     set({
-  //       roomId: data.id,
-  //       roomCode,
-  //       players: data.players,
-  //       state: data.state,
-  //     });
-  //   },
-
   loadPlayer: async (roomId: string, playerSlug: string) => {
     const { data, error } = await supabase
       .from("players")
@@ -130,27 +123,73 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const { roomId, player, players, state } = get();
     if (!roomId || !player || !players || !state) return;
 
-    const getNextPlayer = (
-      players: Player[],
-      currentPlayer: Player,
-      gameMaster: Player
-    ): Player => {
-      const nextIndex = (players.indexOf(currentPlayer) + 1) % players.length;
-      return players[nextIndex] !== gameMaster
-        ? players[nextIndex]
-        : players[(nextIndex + 1) % players.length];
-    };
-
+    // Build Stroke Data
     const color = players.find((p) => p.id === player.id)!.color;
     const newStroke = { playerId: player.id, points, color };
-    const nextTurn = (state.currentTurnIndex + 1) % players.length;
-    const nextPlayer = getNextPlayer(players, player, state.gameMaster!);
+
+    // Get Next Active Player in Turn Order
+    const nonGM = players.filter((p) => p.id !== state.gameMaster!.id);
+    const idx = nonGM.findIndex((p) => p.id === player.id);
+    const nextPlayer = nonGM[(idx + 1) % nonGM.length];
+
     const newState = {
       ...state,
       strokes: [...(state.strokes ?? []), newStroke],
-      currentTurnIndex: nextTurn,
       currentPlayer: nextPlayer,
     };
+    set({ state: newState });
+    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+  },
+
+  setReady: async (ready: boolean) => {
+    const { player, state, roomId, players } = get();
+    console.log("Try set ready", ready, player, state, players);
+    if (!player || !state) return;
+    const newReadinesss = { ...state.readiness, [player.id]: ready };
+    const newState = { ...state, readiness: newReadinesss };
+    set({ state: newState });
+    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+  },
+
+  startGame: async () => {
+    const { players, state, roomId } = get();
+    if (state.status !== "lobby") return;
+
+    // Make sure we have enough active players
+    const active = players.filter((p) => p.id !== state.gameMaster!.id);
+    if (active.length < 3) return;
+
+    // Make sure all players are ready
+    const allReady = active.every((p) => state.readiness[p.id]);
+    if (!allReady) return;
+
+    // Pick a fake artist
+    const fakeArtist = active[Math.floor(Math.random() * active.length)];
+
+    // Set Clue or Grab Random Clue if no game master
+    const clue = state.gameMaster
+      ? state.currentClue
+      : BASIC_CLUES[Math.floor(Math.random() * BASIC_CLUES.length)];
+
+    // Pick first player
+    const others = active.filter((p) => p.id !== fakeArtist.id);
+    const firstPlayer = others[Math.floor(Math.random() * others.length)];
+
+    const newState = {
+      ...state,
+      status: "in-progress" as RoomStatus,
+      fakeArtist,
+      currentClue: clue,
+      currentPlayer: firstPlayer,
+    };
+    set({ state: newState });
+    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+  },
+
+  setGameMaster: async (player: Player | null) => {
+    const { roomId, state } = get();
+    if (!roomId) return;
+    const newState = { ...state, gameMaster: player ?? undefined };
     set({ state: newState });
     await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
   },
