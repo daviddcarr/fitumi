@@ -1,4 +1,4 @@
-export const BASIC_CLUES: string[] = [
+export const BASIC_SUBJECTS: string[] = [
   "taco",
   "cat",
   "dog",

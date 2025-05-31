@@ -6,15 +6,34 @@ export default function CanvasBoard() {
   const { state, player, players, addStroke } = useGame();
   const { currentPlayer, strokes = [] } = state;
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [canvasSize, setCanvasSize] = useState<number>(0);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
 
   useEffect(() => {
-    console.log("Attempting to Redraw");
+    const container = containerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const { width, height } = container.getBoundingClientRect();
+      setCanvasSize(Math.min(width, height));
+    });
+    resizeObserver.observe(container);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [])
+
+  useEffect(() => {
     const canvas = canvasRef.current!;
     if (!canvas) return;
+
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+
     const context = canvas.getContext("2d");
     if (!context) return;
 
@@ -25,11 +44,15 @@ export default function CanvasBoard() {
       context.strokeStyle = stroke.color;
       context.lineWidth = 2;
       context.beginPath();
+
       stroke.points.forEach((point, index) => {
+        const x = point.x * canvasSize;
+        const y = point.y * canvasSize;
+
         if (index === 0) {
-          context.moveTo(point.x, point.y);
+          context.moveTo(x, y);
         } else {
-          context.lineTo(point.x, point.y);
+          context.lineTo(x, y);
         }
       });
       context.stroke();
@@ -40,41 +63,78 @@ export default function CanvasBoard() {
       context.strokeStyle = currentPlayer?.color || "black";
       context.lineWidth = 2;
       context.beginPath();
+
       currentStroke.forEach((point, index) => {
+        const x = point.x * canvasSize;
+        const y = point.y * canvasSize;
+
         if (index === 0) {
-          context.moveTo(point.x, point.y);
+          context.moveTo(x, y);
         } else {
-          context.lineTo(point.x, point.y);
+          context.lineTo(x, y);
         }
       });
       context.stroke();
     }
-  }, [strokes, currentStroke, players, currentPlayer]);
+  }, [strokes, currentStroke, players, currentPlayer, canvasSize]);
+
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!currentPlayer || !player) return;
     if (currentPlayer.id !== player.id) return;
+    if (canvasSize === 0) return;
 
     setIsDrawing(true);
+
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const rawX = e.nativeEvent.clientX - rect.left;
+    const rawY = e.nativeEvent.clientY - rect.top;
+
+    const relX = rawX / canvasSize;
+    const relY = rawY / canvasSize;
+
     setCurrentStroke([
       {
-        x: e.nativeEvent.offsetX,
-        y: e.nativeEvent.offsetY,
+        x: relX,
+        y: relY,
       },
     ]);
+
+    // setCurrentStroke([
+    //   {
+    //     x: e.nativeEvent.offsetX,
+    //     y: e.nativeEvent.offsetY,
+    //   },
+    // ]);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!currentPlayer || !player) return;
     if (currentPlayer.id !== player.id || !isDrawing) return;
+    if (canvasSize === 0) return;
+
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const rawX = e.nativeEvent.clientX - rect.left;
+    const rawY = e.nativeEvent.clientY - rect.top;
+
+    const relX = rawX / canvasSize;
+    const relY = rawY / canvasSize;
 
     setCurrentStroke((prevStroke) => [
       ...prevStroke,
       {
-        x: e.nativeEvent.offsetX,
-        y: e.nativeEvent.offsetY,
+        x: relX,
+        y: relY,
       },
     ]);
+
+    // setCurrentStroke((prevStroke) => [
+    //   ...prevStroke,
+    //   {
+    //     x: e.nativeEvent.offsetX,
+    //     y: e.nativeEvent.offsetY,
+    //   },
+    // ]);
   };
 
   const handleMouseUp = async () => {
@@ -86,14 +146,16 @@ export default function CanvasBoard() {
   };
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={800}
-      height={600}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      className="bg-white"
-    />
+    <div ref={containerRef} className="w-full h-full flex items-center justify-center bg-slate-200">
+      <canvas
+        ref={canvasRef}
+        width={canvasSize}
+        height={canvasSize}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        className="bg-white"
+      />
+    </div>
   );
 }

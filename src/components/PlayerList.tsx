@@ -1,13 +1,15 @@
 import { useGame } from "@stores/useGame";
+import classNames from "classnames";
 import { FaCrown, FaRegCheckCircle } from "react-icons/fa";
 
 interface PlayerListProps {
-  canEdit: boolean;
+  canEdit?: boolean;
+  isLobby?: boolean;
 }
 
-const PlayerList = ({ canEdit = false }: PlayerListProps) => {
+const PlayerList = ({ canEdit = false, isLobby = false }: PlayerListProps) => {
   const { player, players, state, setGameMaster } = useGame();
-  const { gameMaster, readiness } = state;
+  const { gameMaster, readiness, currentPlayer } = state;
 
   if (!player) return null;
 
@@ -20,7 +22,10 @@ const PlayerList = ({ canEdit = false }: PlayerListProps) => {
           return (
             <li
               key={p.id}
-              className="flex items-center space-x-2 gap-2 p-1 rounded-full bg-slate-600"
+              className={classNames(
+                "flex items-center space-x-2 gap-2 p-1 rounded-full",
+                !isLobby && currentPlayer?.id === p.id ? "bg-slate-500" : "bg-slate-700",
+              )}
             >
               <div className="flex items-center gap-2 w-full">
                 <span
@@ -29,7 +34,7 @@ const PlayerList = ({ canEdit = false }: PlayerListProps) => {
                 />
                 <span className="text-white">{p.name}</span>
 
-                {readiness[p.id] && <FaRegCheckCircle />}
+                {isLobby && readiness[p.id] && <FaRegCheckCircle className="text-green-400" />}
 
                 {
                   // Show crown if game master
@@ -39,7 +44,7 @@ const PlayerList = ({ canEdit = false }: PlayerListProps) => {
                     </span>
                   ) : player.id === gameMaster?.id && canEdit ? (
                     <button
-                      className="ml-auto p-2 flex items-center- justify-center bg-slate-500 rounded-full hover:bg-slate-800 hover:text-white"
+                      className="ml-auto p-2 flex cursor-pointer items-center justify-center bg-slate-500 rounded-full hover:bg-slate-800 hover:text-white"
                       onClick={() => {
                         setGameMaster(p);
                       }}

@@ -1,0 +1,55 @@
+import CanvasBoard from "@components/CanvasBoard";
+import PlayerList from "@components/PlayerList";
+import { useGame } from "@stores/useGame";
+import classNames from "classnames";
+import { IoCloseOutline } from "react-icons/io5";
+
+
+const SubjectCard = ({subject}: {subject: string | null}) => {
+
+    return (
+        <div className="p-2 border-2 border-white rounded-lg text-white flex items-center justify-center">
+            { subject ? subject : <IoCloseOutline className="text-4xl" /> }
+        </div>
+    )
+}
+
+const PlayerArtboard = () => {
+    const {
+      player,
+      players,
+      state,
+    } = useGame();
+    const {
+        currentSubject,
+        fakeArtist,
+    } = state;
+
+    if (!player) return null;
+
+    return (
+        <div className={classNames("w-full h-full grid",
+            player.leftHanded ? "lg:grid-cols-[1fr_auto]" : "lg:grid-cols-[auto_1fr]",
+            )}>
+            <div className="lg:order-1 lg:max-h-screen max-w-screen">
+                {player && state && players.length > 0 && <CanvasBoard />}
+            </div>
+
+            <div className={classNames(
+                    "p-2 min-w-[200px]",
+                    player.leftHanded ? "lg:order-2" : "lg:order-none"
+                )}>
+                <h3 className="text-xl font-semibold text-white">{state.name}</h3>
+
+                <SubjectCard subject={fakeArtist?.id !== player.id ? currentSubject : null} />
+
+                <PlayerList canEdit={false} />
+            </div>
+
+        </div>
+    )
+}
+
+export default PlayerArtboard
+
+

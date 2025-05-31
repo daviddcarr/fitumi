@@ -5,4 +5,5 @@ export interface Player {
   slug: string;
   room_id: string;
   created_at: string;
+  leftHanded?: boolean;
 }

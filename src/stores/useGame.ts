@@ -7,7 +7,7 @@ import {
   type Point,
   type RoomStatus,
 } from "../lib/interfaces/room-state";
-import { BASIC_CLUES } from "../data/clue-sets";
+import { BASIC_SUBJECTS } from "@data/subject-sets";
 
 interface GameState {
   roomId: string;
@@ -22,7 +22,7 @@ interface GameActions {
   join: (name: string) => Promise<Player | null>;
   //   loadRoom: (roomCode: string) => Promise<void>;
   loadPlayer: (roomId: string, playerSlug: string) => Promise<void>;
-  submitClue: (clue: string) => Promise<void>;
+  submitSubject: (subject: string) => Promise<void>;
   addStroke: (points: Point[]) => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
@@ -111,10 +111,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     set({ player: data });
   },
 
-  submitClue: async (clue: string) => {
+  submitSubject: async (subject: string) => {
     const roomId = get().roomId;
     if (!roomId) return;
-    const newState = { ...get().state, currentClue: clue };
+    const newState = { ...get().state, currentSubject: subject };
     await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
     set({ state: newState });
   },
@@ -166,10 +166,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // Pick a fake artist
     const fakeArtist = active[Math.floor(Math.random() * active.length)];
 
-    // Set Clue or Grab Random Clue if no game master
-    const clue = state.gameMaster
-      ? state.currentClue
-      : BASIC_CLUES[Math.floor(Math.random() * BASIC_CLUES.length)];
+    // Set Subject or Grab Random Subject if no game master
+    const subject = state.gameMaster
+      ? state.currentSubject
+      : BASIC_SUBJECTS[Math.floor(Math.random() * BASIC_SUBJECTS.length)];
 
     // Pick first player
     const others = active.filter((p) => p.id !== fakeArtist.id);
@@ -179,7 +179,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       ...state,
       status: "in-progress" as RoomStatus,
       fakeArtist,
-      currentClue: clue,
+      currentSubject: subject,
       currentPlayer: firstPlayer,
     };
     set({ state: newState });

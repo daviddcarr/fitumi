@@ -10,7 +10,7 @@ export default interface RoomState {
   status: RoomStatus;
   readiness: Record<string, boolean>;
   strokes: Stroke[];
-  currentClue: string | null;
+  currentSubject: string | null;
   gameMaster?: Player;
   currentPlayer?: Player;
   fakeArtist?: Player;
@@ -21,5 +21,5 @@ export const DEFAULT_ROOM_STATE: RoomState = {
   status: "lobby",
   readiness: {},
   strokes: [],
-  currentClue: null,
+  currentSubject: null,
 };
