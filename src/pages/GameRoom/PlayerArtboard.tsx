@@ -36,10 +36,10 @@ const PlayerArtboard = () => {
             </div>
 
             <div className={classNames(
-                    "p-2 min-w-[200px]",
+                    "p-2 min-w-[200px] bg-purple-900",
                     player.leftHanded ? "lg:order-2" : "lg:order-none"
                 )}>
-                <h3 className="text-xl font-semibold text-white">{state.name}</h3>
+                <h3 className="text-5xl tracking-wide font-semibold text-white font-heading ">{state.name}</h3>
 
                 <SubjectCard subject={fakeArtist?.id !== player.id ? currentSubject : null} />
 

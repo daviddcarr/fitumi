@@ -99,13 +99,6 @@ export default function CanvasBoard() {
         y: relY,
       },
     ]);
-
-    // setCurrentStroke([
-    //   {
-    //     x: e.nativeEvent.offsetX,
-    //     y: e.nativeEvent.offsetY,
-    //   },
-    // ]);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -127,14 +120,6 @@ export default function CanvasBoard() {
         y: relY,
       },
     ]);
-
-    // setCurrentStroke((prevStroke) => [
-    //   ...prevStroke,
-    //   {
-    //     x: e.nativeEvent.offsetX,
-    //     y: e.nativeEvent.offsetY,
-    //   },
-    // ]);
   };
 
   const handleMouseUp = async () => {

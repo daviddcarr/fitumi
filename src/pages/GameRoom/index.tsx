@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
-import CanvasBoard from "@components/CanvasBoard";
 import { useGame } from "@stores/useGame";
 
 
@@ -18,7 +17,7 @@ export type Player = {
   is_fake_artist?: boolean;
 };
 
-export function GameRoomUI() {
+export default function GameRoom() {
   const { roomCode, playerSlug } = useParams();
   const {
     roomId,
@@ -55,12 +54,4 @@ export function GameRoomUI() {
   }
 
   return <PlayerArtboard />;
-}
-
-export default function GameRoom() {
-  return (
-    <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-      <GameRoomUI />
-    </div>
-  );
 }

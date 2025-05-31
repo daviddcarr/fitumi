@@ -18,6 +18,7 @@ interface GameState {
 }
 
 interface GameActions {
+  createRoom: () => Promise<string | null>;
   initRoom: (code: string) => Promise<void>;
   join: (name: string) => Promise<Player | null>;
   //   loadRoom: (roomCode: string) => Promise<void>;
@@ -37,6 +38,35 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
   players: [] as Player[],
   player: undefined,
   state: DEFAULT_ROOM_STATE,
+
+
+  createRoom: async () => {
+    const roomCode = Math.random()
+      .toString(36)
+      .substring(2, 7)
+      .toLocaleUpperCase();
+    const { data, error } = await supabase
+      .from("rooms")
+      .insert([
+        {
+          code: roomCode,
+          state: {
+            ...DEFAULT_ROOM_STATE,
+            name,
+          },
+        },
+      ])
+      .select()
+      .single();
+
+    if (data && roomCode) {
+        return roomCode
+    } else if (error) {
+      console.error(error);
+      return null
+    }
+    return null
+  },
 
   initRoom: async (code: string) => {
     console.log("Init Room: ", code);

@@ -1,1 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=WDXL+Lubrifont+TC&display=swap");
+
 @import "tailwindcss";
+
+@theme {
+    --font-sans: "Montserrat", sans-serif;
+    --font-serif: "WDXL Lubrifont TC", sans-serif;
+    --font-body: var(--font-sans);
+    --font-heading: var(--font-serif);
+}
+
+p, span, button, input {
+    @apply font-body;
+}
