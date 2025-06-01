@@ -1,7 +1,8 @@
+import type { PlayerColor } from "@data/constants";
 import type { Player } from "./player";
 
 export type Point = { x: number; y: number };
-export type Stroke = { playerId: string; points: Point[]; color: string };
+export type Stroke = { playerId: string; points: Point[]; color: PlayerColor };
 
 export type RoomStatus = "lobby" | "in-progress" | "voting" | "results";
 

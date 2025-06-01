@@ -8,7 +8,7 @@ import {
   type RoomStatus,
 } from "../lib/interfaces/room-state";
 import { BASIC_SUBJECTS } from "@data/subject-sets";
-import { STROKES_PER_PLAYER } from "@data/constants";
+import { STROKES_PER_PLAYER, PLAYER_COLORS } from "@data/constants";
 
 interface GameState {
     roomId: string;
@@ -20,7 +20,7 @@ interface GameState {
 
 interface GameActions {
     addStroke: (points: Point[]) => Promise<void>;
-    createRoom: () => Promise<string | null>;
+    createRoom: (name: string) => Promise<string | null>;
     finalizeVoting: () => Promise<void>;
     initRoom: (code: string) => Promise<void>;
     join: (name: string) => Promise<Player | null>;
@@ -33,6 +33,7 @@ interface GameActions {
     submitVote: (voteId: string) => Promise<void>;
     subscribe: () => void;
     unsubscribe: () => void;
+    updatePlayer: (player: Player) => Promise<void>;
 }
 
 export const useGame = create<GameState & GameActions>((set, get) => ({
@@ -43,26 +44,27 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     state: DEFAULT_ROOM_STATE,
 
 
-    createRoom: async () => {
+    createRoom: async (name: string) => {
         const roomCode = Math.random()
-        .toString(36)
-        .substring(2, 7)
-        .toLocaleUpperCase();
+            .toString(36)
+            .substring(2, 7)
+            .toLocaleUpperCase();
         const { data, error } = await supabase
-        .from("rooms")
-        .insert([
-            {
-            code: roomCode,
-            state: {
-                ...DEFAULT_ROOM_STATE,
-                name,
-            },
-            },
-        ])
-        .select()
-        .single();
+            .from("rooms")
+            .insert([
+                {
+                code: roomCode,
+                state: {
+                    ...DEFAULT_ROOM_STATE,
+                    name,
+                },
+                },
+            ])
+            .select()
+            .single();
 
         if (data && roomCode) {
+            set({ roomCode: roomCode, roomId: data.id, state: data.state });
             return roomCode
         } else if (error) {
         console.error(error);
@@ -97,25 +99,21 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
      */
     join: async (name: string) => {
         // Make sure we have a room to join
-        const roomId = get().roomId;
+        const {roomId, players} = get();
         if (!roomId) return;
 
         // Set up Player Data
-        const color =
-        "#" +
-        Math.floor(Math.random() * 0xffffff)
-            .toString(16)
-            .padStart(6, "0");
+        const color = PLAYER_COLORS[players.length % PLAYER_COLORS.length];
         const base = name.toLowerCase().replace(/\s+/g, "-");
         const suffix = Math.random().toString(36).substring(2, 5);
         const slug = `${base}-${suffix}`;
 
         // Create Player
         const { data, error } = await supabase
-        .from("players")
-        .insert([{ room_id: roomId, name, color, slug }])
-        .select()
-        .single();
+            .from("players")
+            .insert([{ room_id: roomId, name, color, slug }])
+            .select()
+            .single();
         if (error || !data) return null;
         set({ player: data });
 
@@ -161,7 +159,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         const newStroke = { playerId: player.id, points, color };
 
         // Get Next Active Player in Turn Order
-        const nonGM = players.filter((p) => p.id !== state.gameMaster!.id);
+        let nonGM: Player[]
+        if (state.gameMaster) {
+            nonGM = players.filter((p) => p.id !== state.gameMaster!.id);
+        } else {
+            nonGM = players.slice()
+        }
         const idx = nonGM.findIndex((p) => p.id === player.id);
         const nextPlayer = nonGM[(idx + 1) % nonGM.length];
 
@@ -173,8 +176,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
         const totalNeeded = nonGM.length * STROKES_PER_PLAYER;
 
-        console.log("Total Needed: ", totalNeeded);
-        console.log("Current Strokes: ", (newState.strokes?.length ?? 0));
         if ((newState.strokes?.length ?? 0) >= totalNeeded) {
             newState = {
                 ...newState,
@@ -203,7 +204,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         if (state.status !== "lobby") return;
 
         // Make sure we have enough active players
-        const active = players.filter((p) => p.id !== state.gameMaster!.id);
+        let active: Player[]
+        if (state.gameMaster) {
+            active = players.filter((p) => p.id !== state.gameMaster!.id);
+        } else {
+            active = players.slice();
+        }
         if (active.length < 3) return;
 
         // Make sure all players are ready
@@ -350,44 +356,68 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
             .eq("id", roomId);
     },
 
-  subscribe: () => {
-    const roomId = get().roomId;
-    if (!roomId) return;
-    supabase
-      .channel(`players-room-${roomId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "players",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) =>
-          set((state) => ({
-            players: [...state.players, payload.new as Player],
-          }))
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "rooms",
-          filter: `id=eq.${roomId}`,
-        },
-        (payload) =>
-          set((state) => ({
-            state: payload.new.state as RoomState,
-            players: state.players.filter(
-              (p) => p.id !== (payload.old as Player).id
-            ),
-          }))
-      )
-      .subscribe();
-  },
+    subscribe: () => {
+        const roomId = get().roomId;
+        if (!roomId) return;
+        supabase
+        .channel(`players-room-${roomId}`)
+        .on(
+            "postgres_changes",
+            {
+            event: "INSERT",
+            schema: "public",
+            table: "players",
+            filter: `room_id=eq.${roomId}`,
+            },
+            (payload) =>
+            set((state) => ({
+                players: [...state.players, payload.new as Player],
+            }))
+        )
+        .on(
+            "postgres_changes",
+            {
+            event: "UPDATE",
+            schema: "public",
+            table: "rooms",
+            filter: `id=eq.${roomId}`,
+            },
+            (payload) =>
+            set((state) => ({
+                state: payload.new.state as RoomState,
+                players: state.players.filter(
+                (p) => p.id !== (payload.old as Player).id
+                ),
+            }))
+        )
+        // .on(
+        //     "postgres_changes",
+        //     {
+        //     event: "UPDATE",
+        //     schema: "public",
+        //     table: "players",
+        //     filter: `room_id=eq.${roomId}`,
+        //     },
+        //     (payload) =>
+        //     set((state) => ({
+        //         players: state.players.map((p) =>
+        //         p.id === payload.new.id ? payload.new : p
+        //         ),
+        //     }))
+        // )
+        .subscribe();
+    },
 
-  unsubscribe: () => {
-    supabase.removeAllChannels();
-  },
+    unsubscribe: () => {
+        supabase.removeAllChannels();
+    },
+
+    updatePlayer: async (player: Player) => {
+        const { error } = await supabase
+        .from("players")
+        .update(player)
+        .eq("id", player.id);
+        if (error) return;
+        set({ player });
+    },
 }));

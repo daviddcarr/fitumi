@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useGame } from "@stores/useGame";
 import CanvasBoard from "@components/CanvasBoard";
+import type { Player } from "@lib/interfaces/player";
 
 export default function PlayerVoting() {
     const {
@@ -16,9 +17,16 @@ export default function PlayerVoting() {
 
     if (!player || !state) return null;
 
-    const nonGM = players.filter((p) => p.id !== state.gameMaster!.id);
+    let nonGM: Player[]
+    let isGM: boolean
+    if (state.gameMaster) {
+        nonGM = players.filter((p) => p.id !== state.gameMaster!.id);
+        isGM = player.id === state.gameMaster!.id;
+    } else {
+        nonGM = players.slice()
+        isGM = false
+    }
 
-    const isGM = player.id === state.gameMaster!.id;
 
     const votesSoFar = Object.keys(state.votes ?? {}).length;
     const votesNeeded = nonGM.length;

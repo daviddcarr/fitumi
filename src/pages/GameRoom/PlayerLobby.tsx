@@ -26,11 +26,20 @@ export default function PlayerLobby() {
   } = useGame();
   const { gameMaster, readiness, currentSubject } = state;
 
-  const [subject, setSubject] = useState<string>(state.currentSubject || "");
+  const [subject, setSubject] = useState<string>(currentSubject || "");
 
   useEffect(() => {
-    setSubject(state.currentSubject || "");
-  }, [state.currentSubject]);
+    setSubject(currentSubject || "");
+  }, [currentSubject]);
+
+  useEffect(() => {
+    if (!gameMaster) {
+      const allReady = players.every((p) => readiness[p.id]);
+      if (allReady) {
+        startGame();
+      }
+    }
+  }, [gameMaster, readiness])
 
   console.log("Player Lobby", player, players, state);
   if (!player) return null;
@@ -41,12 +50,11 @@ export default function PlayerLobby() {
       <CanvasBackground />
 
       <div className="z-10 w-full h-full flex justify-center items-center">
-        <div className="p-4 bg-purple-900/60 backdrop-blur-sm rounded-2xl z-10 max-w-sm mx-auto space-y-4 w-full">
-          <h1 className="text-3xl tracking-wider font-semibold text-white">
-            {state.name}
-          </h1>
-          <div className="flex justify-between items-center text-white">
-            <h6>Lobby</h6>
+        <div className="p-4 bg-purple-blurred z-10 max-w-sm mx-auto space-y-4 w-full">
+          <div className="flex items-center justify-between text-white">
+            <h1 className="text-3xl tracking-wider font-semibold text-white">
+              {state.name}
+            </h1>
             <ButtonCopyUrl />
           </div>
 

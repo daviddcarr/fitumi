@@ -12,3 +12,15 @@
 p, span, button, input {
     @apply font-body;
 }
+
+.bg-purple-blurred {
+    @apply bg-purple-900/60 backdrop-blur-sm rounded-2xl
+}
+
+.text-input {
+    @apply focus:outline-purple-900 text-white  placeholder:text-purple-800;
+}
+
+.purple-button {
+    @apply bg-purple-800 hover:bg-purple-900 cursor-pointer text-white px-4 py-2 rounded;
+}

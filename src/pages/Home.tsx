@@ -11,7 +11,7 @@ export default function Home() {
   const { createRoom } = useGame();
 
   const initRoom = async () => {
-    const newRoomCode = await createRoom();
+    const newRoomCode = await createRoom(name);
     if (newRoomCode) {
       navigate(`/${newRoomCode}`);
     } 
@@ -23,23 +23,24 @@ export default function Home() {
 
 
       <div className="relative z-10 p-4 h-full w-full flex justify-center items-center">
-        <div className="flex flex-col max-w-md items-center space-y-2 p-6 bg-slate-800 rounded-2xl">
+        <div className="flex flex-col max-w-md items-center space-y-2 p-6 bg-purple-blurred">
           <h1 className="text-5xl font-bold mb-0 text-white font-heading tracking-widest ">
             FITUMI
           </h1>
-          <p className="text-sm text-white mb-8">Fake It 'Til U Make It</p>
+          <p className="text-sm text-white mb-8 tracking-wide ">Fake It 'Til U Make It</p>
   
           <div className="grid md:grid-cols-[1fr_auto_1fr] gap-8  md:gap-4">
             <div className="space-y-2">
               <input
-                className="border p-2 w-full rounded border-white text-white text-center placeholder:text-gray-400"
+                className="border p-2 w-full rounded border-white focus:outline-purple-900 text-white text-center placeholder:text-purple-800"
                 placeholder="Room Name"
                 value={name}
                 onChange={(e) => setName(e.target.value.substring(0, 14))}
               />
               <button
-                className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+                className="purple-button w-full"
                 onClick={initRoom}
+                disabled={!name && name.length <= 4}
               >
                 Create Room
               </button>
@@ -49,13 +50,13 @@ export default function Home() {
             </div>
             <div className="space-y-2">
               <input
-                className="border p-2 w-full rounded border-white text-white text-center placeholder:text-gray-400"
+                className="border p-2 w-full rounded border-white text-center text-input"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value.substring(0, 5))}
                 placeholder="Room Code"
               />
               <button
-                className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+                className="purple-button w-full"
                 disabled={!roomCode && roomCode.length !== 5}
                 onClick={() => navigate("/" + roomCode)}
               >
