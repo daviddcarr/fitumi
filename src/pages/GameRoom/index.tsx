@@ -6,6 +6,8 @@ import { useGame } from "@stores/useGame";
 import PlayerJoin from "./PlayerJoin";
 import PlayerLobby from "./PlayerLobby";
 import PlayerArtboard from "./PlayerArtboard";
+import PlayerVoting from "./PlayerVoting";
+import PlayerResults from "./PlayerResults";
 
 export type Player = {
   id: string;
@@ -53,5 +55,17 @@ export default function GameRoom() {
     return <PlayerLobby />;
   }
 
-  return <PlayerArtboard />;
+  if (state.status === "in-progress" && player) {
+    return <PlayerArtboard />;
+  }
+  
+  if (state.status === "voting" && player) {
+    return <PlayerVoting />;
+  }
+
+  if (state.status === "results" && player) {
+    return <PlayerResults />;
+  }
+
+  return null;
 }

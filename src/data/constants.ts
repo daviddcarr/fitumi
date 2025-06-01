@@ -1,0 +1,1 @@
+export const STROKES_PER_PLAYER = 3;

@@ -3,7 +3,7 @@ import type { Player } from "./player";
 export type Point = { x: number; y: number };
 export type Stroke = { playerId: string; points: Point[]; color: string };
 
-export type RoomStatus = "lobby" | "in-progress";
+export type RoomStatus = "lobby" | "in-progress" | "voting" | "results";
 
 export default interface RoomState {
   name?: string;
@@ -14,6 +14,17 @@ export default interface RoomState {
   gameMaster?: Player;
   currentPlayer?: Player;
   fakeArtist?: Player;
+
+  votes: Record< string, string>;
+  votingDeadline: number | null;
+  scores: Record<string, number>;
+
+  results?: {
+    voteCounts: Record<string, number>;
+    ranked: string[];
+    fakeWins: boolean;
+    winners: string[];
+  };
 }
 
 export const DEFAULT_ROOM_STATE: RoomState = {
@@ -22,4 +33,10 @@ export const DEFAULT_ROOM_STATE: RoomState = {
   readiness: {},
   strokes: [],
   currentSubject: null,
+
+  votes: {},
+  votingDeadline: null,
+  scores: {},
+
+  results: undefined,
 };

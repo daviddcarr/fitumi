@@ -2,7 +2,11 @@ import React, { useRef, useEffect, useState } from "react";
 import type { Point } from "../lib/interfaces/room-state";
 import { useGame } from "../stores/useGame";
 
-export default function CanvasBoard() {
+interface CanvasBoardProps {
+  readOnly?: boolean;
+}
+
+export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const { state, player, players, addStroke } = useGame();
   const { currentPlayer, strokes = [] } = state;
 
@@ -136,9 +140,9 @@ export default function CanvasBoard() {
         ref={canvasRef}
         width={canvasSize}
         height={canvasSize}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseDown={readOnly ? undefined : handleMouseDown}
+        onMouseMove={readOnly ? undefined : handleMouseMove}
+        onMouseUp={readOnly ? undefined : handleMouseUp}
         className="bg-white"
       />
     </div>
