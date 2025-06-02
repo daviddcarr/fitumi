@@ -7,6 +7,9 @@ interface CanvasBoardProps {
   readOnly?: boolean;
 }
 
+const BORDER_PADDING = 5;
+const PADDING_DOUBLED = BORDER_PADDING * 2;
+
 export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const { state, player, players, addStroke } = useGame();
   const { currentPlayer, strokes = [] } = state;
@@ -24,7 +27,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
     const resizeObserver = new ResizeObserver(() => {
       const { width, height } = container.getBoundingClientRect();
-      setCanvasSize(Math.min(width, height));
+      setCanvasSize(Math.min(width, height) - PADDING_DOUBLED);
     });
     resizeObserver.observe(container);
     return () => {
@@ -143,24 +146,55 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full p-2 flex items-center justify-center bg-slate-200"
+      className="w-full h-full p-2 flex items-center justify-center bg-slate-200 relative"
     >
-      <canvas
-        ref={canvasRef}
-        width={canvasSize}
-        height={canvasSize}
-        onPointerDown={readOnly ? undefined : handlePointerDown}
-        onPointerMove={readOnly ? undefined : handlePointerMove}
-        onPointerUp={readOnly ? undefined : handlePointerUp}
-        onPointerLeave={readOnly ? undefined : handlePointerUp}
-        style={{ touchAction: "none" }}
+      <div
+        style={{
+          width: `${canvasSize + PADDING_DOUBLED}px`,
+          height: `${canvasSize + PADDING_DOUBLED}px`,
+        }}
         className={classNames(
-          "rounded-3xl",
-          currentPlayer?.id === player?.id || readOnly
-            ? "bg-white"
-            : "bg-transparent"
+          "rounded-[28px] relative overflow-hidden flex items-center justify-center",
+          currentPlayer?.id === player?.id &&
+            "after:animate-spin-background after:z-0 after:block after:absolute after:w-[150%] after:h-[150%] after:inset-[-25%] after:rounded-full after:bg-conic/increasing after:from-violet-700 after:via-lime-300 after:to-violet-700"
         )}
-      />
+      >
+        <canvas
+          ref={canvasRef}
+          width={canvasSize}
+          height={canvasSize}
+          onPointerDown={readOnly ? undefined : handlePointerDown}
+          onPointerMove={readOnly ? undefined : handlePointerMove}
+          onPointerUp={readOnly ? undefined : handlePointerUp}
+          onPointerLeave={readOnly ? undefined : handlePointerUp}
+          style={{ touchAction: "none" }}
+          className={classNames(
+            "rounded-3xl relative z-[1]",
+            currentPlayer?.id === player?.id || readOnly
+              ? "bg-white"
+              : "bg-transparent"
+          )}
+        />
+      </div>
+
+      <div className="w-full h-full pointer-events-none absolute inset-0">
+        {currentPlayer?.id !== player?.id && !readOnly && (
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+            <h2 className="font-heading text-purple-800 text-2xl">
+              <span
+                className="inline-block px-2 font-heading text-white tracking-wide rounded"
+                style={{
+                  backgroundColor: currentPlayer?.color.hex,
+                  color: currentPlayer?.color.text,
+                }}
+              >
+                {currentPlayer?.name}
+              </span>{" "}
+              is drawing
+            </h2>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
