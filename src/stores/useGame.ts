@@ -8,7 +8,7 @@ import {
   type RoomStatus,
 } from "../lib/interfaces/room-state";
 import { BASIC_SUBJECTS } from "@data/subject-sets";
-import { STROKES_PER_PLAYER, PLAYER_COLORS } from "@data/constants";
+import { STROKES_PER_PLAYER, PLAYER_COLORS, type PlayerColor } from "@data/constants";
 
 interface GameState {
     roomId: string;
@@ -103,7 +103,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         if (!roomId) return;
 
         // Set up Player Data
-        const color = PLAYER_COLORS[players.length % PLAYER_COLORS.length];
+        const availableColors: PlayerColor[] = PLAYER_COLORS.filter(
+            (color) => !players.some((player) => player.color.name === color.name)
+        )
+
+        const color = availableColors[players.length % PLAYER_COLORS.length];
         const base = name.toLowerCase().replace(/\s+/g, "-");
         const suffix = Math.random().toString(36).substring(2, 5);
         const slug = `${base}-${suffix}`;
@@ -181,7 +185,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
                 ...newState,
                 status: "voting",
                 votes: {},
-                votingDeadline: Date.now() + 30000
+                votingDeadline: Date.now() + 30000,
+                previousArt: [...newState?.previousArt, newState.strokes],
             }
         }
 
@@ -286,7 +291,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
             votingDeadline: null,
             results: undefined,
             scores: state.scores || {},
-            readiness: {}
+            readiness: {},
+            previousArt: state.previousArt,
         }
 
         set({ state: newState });
@@ -377,10 +383,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         .on(
             "postgres_changes",
             {
-            event: "UPDATE",
-            schema: "public",
-            table: "rooms",
-            filter: `id=eq.${roomId}`,
+                event: "UPDATE",
+                schema: "public",
+                table: "rooms",
+                filter: `id=eq.${roomId}`,
             },
             (payload) =>
             set((state) => ({
@@ -390,21 +396,21 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
                 ),
             }))
         )
-        // .on(
-        //     "postgres_changes",
-        //     {
-        //     event: "UPDATE",
-        //     schema: "public",
-        //     table: "players",
-        //     filter: `room_id=eq.${roomId}`,
-        //     },
-        //     (payload) =>
-        //     set((state) => ({
-        //         players: state.players.map((p) =>
-        //         p.id === payload.new.id ? payload.new : p
-        //         ),
-        //     }))
-        // )
+        .on(
+            "postgres_changes",
+            {
+                event: "UPDATE",
+                schema: "public",
+                table: "players",
+                filter: `room_id=eq.${roomId}`,
+            },
+            (payload) =>
+            set((state) => ({
+                players: state.players.map((p) =>
+                    p.id === payload.new.id ? payload.new as Player : p
+                ),
+            }))
+        )
         .subscribe();
     },
 

@@ -17,10 +17,14 @@ p, span, button, input {
     @apply bg-purple-900/60 backdrop-blur-sm rounded-2xl
 }
 
+.bg-blurred {
+    @apply bg-gray-100/50 backdrop-blur-xs border-2 border-purple-300 rounded-2xl
+}
+
 .text-input {
-    @apply focus:outline-purple-900 text-white  placeholder:text-purple-800;
+    @apply border p-2 w-full rounded border-purple-300 focus:outline-purple-900 text-purple-950 text-center placeholder:text-purple-800;
 }
 
 .purple-button {
-    @apply bg-purple-800 hover:bg-purple-900 cursor-pointer text-white px-4 py-2 rounded;
+    @apply bg-purple-800 hover:bg-purple-900 cursor-pointer text-white px-4 py-2 rounded disabled:bg-purple-700 disabled:text-purple-400 disabled:cursor-auto;
 }

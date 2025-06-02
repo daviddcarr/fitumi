@@ -68,34 +68,23 @@ export default function PlayerVoting() {
     const hasVoted = state.votes && !!state.votes[player.id];
 
     return (
-        <div className="flex flex-col items-center justify-center h-full">
-            <h2 className="text-3xl font-semibold mb-4 text-gray-800">
-                Voting Time! Who's the Fake Artist?
+        <div className="flex flex-col items-center justify-center h-full w-full bg-purple-950">
+            <h2 className="text-5xl font-heading font-semibold mb-2 text-white">
+                Who's Faking It?
             </h2>
 
-            <div className="border border-gray-300 mb-4 w-[80vw] h-[60vh]">
-                <CanvasBoard 
-                    //readOnly 
-                    />
-            </div>
-
-            <div className="mb-4 text-xl text-gray-700">
-                {isGM
-                    ? "You're the Game Master - Waiting for others to vote."
-                    : hasVoted
-                    ? "Waiting for other players to finish voting..."
-                    : `Time Left: ${secondsLeft} seconds` }
-            </div>
-
             { !isGM && !hasVoted && (
-                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="flex just-center md:grid-cols-3 gap-4 mb-4">
                     {
                         nonGM
                             .filter((p) => p.id !== player.id)
                             .map((p) => (
                                 <button
-                                    className="bg-blue-500 text-white py-2 rounded disabled:opacity-50"
+                                    className=" text-white p-2 rounded disabled:opacity-50"
                                     key={p.id}
+                                    style={{
+                                        backgroundColor: p.color.hex
+                                    }}
                                     onClick={() => submitVote(p.id)}
                                 >
                                     {p.name}
@@ -105,10 +94,25 @@ export default function PlayerVoting() {
                 </div>
             )}
 
-            <div className="mt-4 text-sm text-gray-500">
-                {votesSoFar} / {votesNeeded} votes cast
-            </div>
+            {
+                isGM && (
+                    <h3 className="text-white mb-4">Waiting for players to vote...</h3>
+                )
+            }
 
+            <div className="border p-2 bg-gray-200 mb-4 w-full h-[60vh] relative">
+                <CanvasBoard 
+                    readOnly 
+                    />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-5xl font-semibold font-heading text-purple-800/50">
+                        {secondsLeft}
+                    </div>
+                </div>
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
+                    {votesSoFar} / {votesNeeded} votes cast
+                </div>
+            </div>
         </div>
     )
 }

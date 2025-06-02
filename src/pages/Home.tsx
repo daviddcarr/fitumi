@@ -23,16 +23,16 @@ export default function Home() {
 
 
       <div className="relative z-10 p-4 h-full w-full flex justify-center items-center">
-        <div className="flex flex-col max-w-md items-center space-y-2 p-6 bg-purple-blurred">
-          <h1 className="text-5xl font-bold mb-0 text-white font-heading tracking-widest ">
+        <div className="flex flex-col max-w-md items-center space-y-2 p-6 bg-blurred">
+          <h1 className="text-5xl font-bold mb-0 text-purple-800 font-heading tracking-widest ">
             FITUMI
           </h1>
-          <p className="text-sm text-white mb-8 tracking-wide ">Fake It 'Til U Make It</p>
+          <p className="text-sm text-slate-800 mb-8 tracking-wide ">Fake It 'Til U Make It</p>
   
           <div className="grid md:grid-cols-[1fr_auto_1fr] gap-8  md:gap-4">
             <div className="space-y-2">
               <input
-                className="border p-2 w-full rounded border-white focus:outline-purple-900 text-white text-center placeholder:text-purple-800"
+                className="text-input"
                 placeholder="Room Name"
                 value={name}
                 onChange={(e) => setName(e.target.value.substring(0, 14))}
@@ -46,11 +46,11 @@ export default function Home() {
               </button>
             </div>
             <div className="flex items-center justify-center">
-              <span className="text-white text-2xl !font-heading">OR</span>
+              <span className="text-purple-900 text-2xl !font-heading">OR</span>
             </div>
             <div className="space-y-2">
               <input
-                className="border p-2 w-full rounded border-white text-center text-input"
+                className="border p-2 w-full rounded border-purple-300 text-center text-input"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value.substring(0, 5))}
                 placeholder="Room Code"

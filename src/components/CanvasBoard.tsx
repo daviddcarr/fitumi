@@ -45,7 +45,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
     // Draw Saved Strokes
     strokes.forEach((stroke) => {
-      context.strokeStyle = stroke.color;
+      context.strokeStyle = stroke.color.hex;
       context.lineWidth = 2;
       context.beginPath();
 
@@ -64,7 +64,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
     // Draw Current Strokes
     if (currentStroke.length > 0) {
-      context.strokeStyle = currentPlayer?.color || "black";
+      context.strokeStyle = currentPlayer?.color.hex || "black";
       context.lineWidth = 2;
       context.beginPath();
 
@@ -135,7 +135,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full flex items-center justify-center bg-slate-200">
+    <div ref={containerRef} className="w-full h-full p-2 flex items-center justify-center bg-slate-200">
       <canvas
         ref={canvasRef}
         width={canvasSize}

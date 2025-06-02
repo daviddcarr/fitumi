@@ -50,9 +50,9 @@ export default function PlayerLobby() {
       <CanvasBackground />
 
       <div className="z-10 w-full h-full flex justify-center items-center">
-        <div className="p-4 bg-purple-blurred z-10 max-w-sm mx-auto space-y-4 w-full">
-          <div className="flex items-center justify-between text-white">
-            <h1 className="text-3xl tracking-wider font-semibold text-white">
+        <div className="p-4 bg-blurred z-10 max-w-sm mx-auto space-y-4 w-full">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl tracking-wider font-semibold font-heading text-purple-800 leading-none ">
               {state.name}
             </h1>
             <ButtonCopyUrl />
@@ -95,7 +95,7 @@ export default function PlayerLobby() {
                 className="w-full grow bg-gray-700 flex items-center gap-2 justify-center text-white py-2 rounded disabled:opacity-50 disabled:cursor-auto cursor-pointer hover:bg-purple-700"
                 onClick={() => setGameMaster(player)}
               >
-                <FaCrown /> Make me Game Master
+                <FaCrown /> Crown Me
               </button>
             )}
           </div>
@@ -104,27 +104,27 @@ export default function PlayerLobby() {
           {gameMaster?.id === player?.id && (
             <>
               <div className="">
-                <h2 className="text-2xl text-white">Subject</h2>
-                <p className="text-white">As the Game Master you can submit a word (noun) for your artists to draw.</p>
+                <h2 className="text-2xl font-heading text-purple-800">Subject</h2>
+                <p className="text-slate-800">As the Game Master you can submit a word (noun) for your artists to draw.</p>
               </div>
               <div className="flex gap-2">
-                <div className="border rounded border-white flex items-center grow">
+                <div className="border rounded border-purple-300 flex items-center grow">
                   <input
                     type="text"
                     placeholder="Subject"
-                    className={`${subject === currentSubject ? "text-green-200" : "text-white"} grow p-2 placeholder:text-gray-400 capitalize`}
+                    className={`${subject === currentSubject ? "text-green-600" : "text-purple-900"} grow p-2 placeholder:text-gray-400 focus:outline-purple-900 capitalize`}
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                   />
                   <button
-                    className=" text-white hover:text-purple-400 cursor-pointer py-2 px-4"
+                    className=" text-purple-800 hover:text-purple-400 cursor-pointer py-2 px-4"
                     onClick={() => submitSubject(BASIC_SUBJECTS[Math.floor(Math.random() * BASIC_SUBJECTS.length)])}
                     >
                     <FaDiceD20 />
                   </button>
                 </div>
                 <button
-                  className={`${subject === currentSubject ? "bg-green-600" : "bg-blue-600"} text-white py-2 px-4 rounded cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
+                  className={`${subject === currentSubject ? "bg-green-600 hover:bg-green-900" : "bg-purple-600 hover:bg-purple-800"} text-white py-2 px-4 rounded cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
                   onClick={() => submitSubject(subject)}
                   disabled={!subject.trim()}
                 >
@@ -138,7 +138,7 @@ export default function PlayerLobby() {
                   !players.every((p) => readiness[p.id]) ||
                   (gameMaster && !currentSubject)
                 }
-                className="w-full bg-green-600 text-white py-2 rounded cursor-pointer disabled:cursor-auto disabled:opacity-50"
+                className="w-full bg-purple-800 hover:bg-purple-900 text-white py-2 rounded cursor-pointer disabled:cursor-auto disabled:opacity-50"
                 onClick={() => startGame()}
               >
                 Start Game

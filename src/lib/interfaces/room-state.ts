@@ -19,6 +19,7 @@ export default interface RoomState {
   votes: Record< string, string>;
   votingDeadline: number | null;
   scores: Record<string, number>;
+  previousArt: Stroke[][];
 
   results?: {
     voteCounts: Record<string, number>;
@@ -40,4 +41,5 @@ export const DEFAULT_ROOM_STATE: RoomState = {
   scores: {},
 
   results: undefined,
+  previousArt: []
 };

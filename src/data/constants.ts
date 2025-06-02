@@ -24,7 +24,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     },
     {
         name: "Green",
-        hex: "#33cc33",
+        hex: "#2a7e09",
     },
     {
         name: "Teal",

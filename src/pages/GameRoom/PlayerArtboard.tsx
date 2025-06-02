@@ -8,8 +8,17 @@ import { IoCloseOutline } from "react-icons/io5";
 const SubjectCard = ({subject}: {subject: string | null}) => {
 
     return (
-        <div className="p-2 border-2 border-white rounded-lg text-white flex items-center justify-center">
-            { subject ? subject : <IoCloseOutline className="text-4xl" /> }
+        <div 
+            className={classNames(
+                "p-2 h-20 font-heading capitalize border-2 border-white rounded-lg text-white flex items-center justify-center",
+                subject ? "text-2xl": "text-4xl"
+            )}
+            >
+            { subject ? subject : (
+                <>
+                    ? <span className="text-6xl !font-heading">?</span> ?
+                </>
+            ) }
         </div>
     )
 }
@@ -36,10 +45,10 @@ const PlayerArtboard = () => {
             </div>
 
             <div className={classNames(
-                    "p-2 min-w-[200px] bg-purple-900",
+                    "p-2 min-w-[200px] bg-purple-950 space-y-4",
                     player.leftHanded ? "lg:order-2" : "lg:order-none"
                 )}>
-                <h3 className="text-5xl tracking-wide font-semibold text-white font-heading ">{state.name}</h3>
+                <h3 className="text-3xl tracking-wide font-semibold text-white font-heading ">{state.name}</h3>
 
                 <SubjectCard subject={fakeArtist?.id !== player.id ? currentSubject : null} />
 
