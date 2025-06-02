@@ -29,7 +29,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     return () => {
       resizeObserver.disconnect();
     };
-  }, [])
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -81,7 +81,6 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
       context.stroke();
     }
   }, [strokes, currentStroke, players, currentPlayer, canvasSize]);
-
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!currentPlayer || !player) return;
@@ -135,7 +134,10 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full p-2 flex items-center justify-center bg-slate-200">
+    <div
+      ref={containerRef}
+      className="w-full h-full p-2 flex items-center justify-center bg-slate-200"
+    >
       <canvas
         ref={canvasRef}
         width={canvasSize}
@@ -143,7 +145,11 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
         onMouseDown={readOnly ? undefined : handleMouseDown}
         onMouseMove={readOnly ? undefined : handleMouseMove}
         onMouseUp={readOnly ? undefined : handleMouseUp}
-        className="bg-white"
+        className={
+          currentPlayer?.id === player?.id || readOnly
+            ? "bg-white"
+            : "bg-transparent"
+        }
       />
     </div>
   );

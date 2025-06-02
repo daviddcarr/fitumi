@@ -39,7 +39,7 @@ export default function PlayerLobby() {
         startGame();
       }
     }
-  }, [gameMaster, readiness])
+  }, [gameMaster, readiness]);
 
   console.log("Player Lobby", player, players, state);
   if (!player) return null;
@@ -49,7 +49,7 @@ export default function PlayerLobby() {
     <div className="relative w-full h-screen overflow-hidden">
       <CanvasBackground />
 
-      <div className="z-10 w-full h-full flex justify-center items-center">
+      <div className="z-10 w-full h-full sm:flex justify-center items-center p-2 overflow-scroll">
         <div className="p-4 bg-blurred z-10 max-w-sm mx-auto space-y-4 w-full">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl tracking-wider font-semibold font-heading text-purple-800 leading-none ">
@@ -61,12 +61,12 @@ export default function PlayerLobby() {
           <PlayerList canEdit={!!gameMaster} isLobby />
 
           {/* Ready Button */}
-          <div className="flex gap-2 items-stretch w-full">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch w-full">
             <button
               className={`p-2 h-full cursor-pointer rounded flex justify-center items-center gap-2 text-white hover:bg-gray-700 ${
                 readiness[player?.id] ? "bg-green-600" : "bg-gray-400"
               } ${
-                gameMaster?.id !== player?.id ? "w-full" : "w-max"
+                gameMaster?.id !== player?.id ? "w-full" : "w-full sm:w-max"
               }`}
               onClick={() => setReady(!readiness[player?.id])}
             >
@@ -104,31 +104,51 @@ export default function PlayerLobby() {
           {gameMaster?.id === player?.id && (
             <>
               <div className="">
-                <h2 className="text-2xl font-heading text-purple-800">Subject</h2>
-                <p className="text-slate-800">As the Game Master you can submit a word (noun) for your artists to draw.</p>
+                <h2 className="text-2xl font-heading text-purple-800">
+                  Subject
+                </h2>
+                <p className="text-slate-800">
+                  As the Game Master you can submit a word (noun) for your
+                  artists to draw.
+                </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <div className="border rounded border-purple-300 flex items-center grow">
                   <input
                     type="text"
                     placeholder="Subject"
-                    className={`${subject === currentSubject ? "text-green-600" : "text-purple-900"} grow p-2 placeholder:text-gray-400 focus:outline-purple-900 capitalize`}
+                    className={`${
+                      subject === currentSubject
+                        ? "text-green-600"
+                        : "text-purple-900"
+                    } grow p-2 placeholder:text-gray-400 focus:outline-purple-900 capitalize`}
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                   />
                   <button
                     className=" text-purple-800 hover:text-purple-400 cursor-pointer py-2 px-4"
-                    onClick={() => submitSubject(BASIC_SUBJECTS[Math.floor(Math.random() * BASIC_SUBJECTS.length)])}
-                    >
+                    onClick={() =>
+                      submitSubject(
+                        BASIC_SUBJECTS[
+                          Math.floor(Math.random() * BASIC_SUBJECTS.length)
+                        ]
+                      )
+                    }
+                  >
                     <FaDiceD20 />
                   </button>
                 </div>
                 <button
-                  className={`${subject === currentSubject ? "bg-green-600 hover:bg-green-900" : "bg-purple-600 hover:bg-purple-800"} text-white py-2 px-4 rounded cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
+                  className={`${
+                    subject === currentSubject
+                      ? "bg-green-600 hover:bg-green-900"
+                      : "bg-purple-600 hover:bg-purple-800"
+                  } text-white py-2 px-4 flex items-center justify-center rounded cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
                   onClick={() => submitSubject(subject)}
                   disabled={!subject.trim()}
                 >
                   {subject === currentSubject ? <FaEdit /> : <FaRegEdit />}
+                  <span className="ml-2 sm:hidden">Submit</span>
                 </button>
               </div>
 

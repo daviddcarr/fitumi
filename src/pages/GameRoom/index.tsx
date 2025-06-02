@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useGame } from "@stores/useGame";
 
-
 import PlayerJoin from "./PlayerJoin";
 import PlayerLobby from "./PlayerLobby";
 import PlayerArtboard from "./PlayerArtboard";
@@ -58,7 +57,7 @@ export default function GameRoom() {
   if (state.status === "in-progress" && player) {
     return <PlayerArtboard />;
   }
-  
+
   if (state.status === "voting" && player) {
     return <PlayerVoting />;
   }
