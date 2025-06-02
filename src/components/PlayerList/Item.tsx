@@ -40,7 +40,7 @@ const PlayerListItem = ({
         )}
       >
         <div className="flex items-center gap-2 w-full">
-          {p.id === player?.id ? (
+          {p.id === player?.id && isLobby ? (
             <button
               className="w-9 h-9 group rounded-sm cursor-pointer flex items-center justify-center"
               style={{ backgroundColor: p.color.hex }}

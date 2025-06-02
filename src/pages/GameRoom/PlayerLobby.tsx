@@ -12,6 +12,8 @@ import {
   FaDiceD20,
   FaEdit,
   FaRegEdit,
+  FaInfoCircle,
+  FaRegImages,
 } from "react-icons/fa";
 
 export default function PlayerLobby() {
@@ -23,8 +25,10 @@ export default function PlayerLobby() {
     setReady,
     startGame,
     setGameMaster,
+    setShowInfo,
+    setShowGallery,
   } = useGame();
-  const { gameMaster, readiness, currentSubject } = state;
+  const { gameMaster, readiness, currentSubject, previousArt } = state;
 
   const [subject, setSubject] = useState<string>(currentSubject || "");
 
@@ -55,7 +59,15 @@ export default function PlayerLobby() {
             <h1 className="text-3xl tracking-wider font-semibold font-heading text-purple-800 leading-none ">
               {state.name}
             </h1>
-            <ButtonCopyUrl />
+            <div className="flex items-center gap-2">
+              <ButtonCopyUrl />
+              <button
+                onClick={() => setShowInfo(true)}
+                className="p-1 text-purple-950 hover:text-purple-600"
+              >
+                <FaInfoCircle className="text-2xl" />
+              </button>
+            </div>
           </div>
 
           <PlayerList canEdit={!!gameMaster} isLobby />
@@ -96,6 +108,15 @@ export default function PlayerLobby() {
                 onClick={() => setGameMaster(player)}
               >
                 <FaCrown /> Crown Me
+              </button>
+            )}
+
+            {previousArt.length > 0 && (
+              <button
+                className="w-full sm:w-max bg-purple-800 flex items-center gap-2 justify-center text-white py-2 px-4 rounded cursor-pointer hover:bg-purple-700"
+                onClick={() => setShowGallery(true)}
+              >
+                <FaRegImages /> <span className="sm:hidden">Gallery</span>
               </button>
             )}
           </div>

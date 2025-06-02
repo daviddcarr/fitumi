@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useGame } from "@stores/useGame";
 import CanvasBoard from "@components/CanvasBoard";
 import type { Player } from "@lib/interfaces/player";
@@ -72,11 +72,15 @@ export default function PlayerVoting() {
               .filter((p) => p.id !== player.id)
               .map((p) => (
                 <button
-                  className=" text-white p-2 rounded disabled:opacity-50 w-full sm:w-auto"
+                  className="text-white p-2 cursor-pointer rounded disabled:opacity-50 w-full sm:w-auto hover:bg-[var(--hover-color)]"
                   key={p.id}
-                  style={{
-                    backgroundColor: p.color.hex,
-                  }}
+                  style={
+                    {
+                      backgroundColor: p.color.hex,
+                      color: p.color.text,
+                      "--hover-color": p.color.hover,
+                    } as React.CSSProperties
+                  }
                   onClick={() => submitVote(p.id)}
                 >
                   {p.name}
@@ -92,12 +96,12 @@ export default function PlayerVoting() {
 
       <div className="border p-2 bg-gray-200 mb-4 w-full h-[60vh] relative">
         <CanvasBoard readOnly />
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute z-20 inset-0 flex items-center justify-center">
           <div className="text-5xl font-semibold font-heading text-purple-800/50">
             {secondsLeft}
           </div>
         </div>
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
+        <div className="absolute z-20 bottom-8 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
           {votesSoFar} / {votesNeeded} votes cast
         </div>
       </div>

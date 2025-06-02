@@ -23,7 +23,7 @@ input {
 }
 
 .bg-purple-blurred {
-  @apply bg-purple-900/60 backdrop-blur-sm rounded-2xl;
+  @apply bg-purple-900/90 border-2 border-purple-950 backdrop-blur-sm rounded-2xl;
 }
 
 .bg-blurred {

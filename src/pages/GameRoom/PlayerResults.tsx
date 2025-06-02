@@ -5,7 +5,7 @@ export default function PlayerResults() {
   const { players, state, nextRound } = useGame();
   if (!state.results) return null;
 
-  const { previousArt } = state;
+  const { previousArt, fakeArtist } = state;
   const { voteCounts, ranked, fakeWins } = state.results;
   const scoreboard = state.scores || {};
 
@@ -16,6 +16,24 @@ export default function PlayerResults() {
       <h2 className="text-3xl sm:text-4xl tracking-wider font-bold mb-4 text-white font-heading">
         {outcomeMsg}
       </h2>
+
+      {/* Fake Artist Identity */}
+      {fakeArtist && (
+        <div className="mb-6 w-full max-w-md text-center">
+          <h3 className="text-2xl font-semibold font-heading text-white mb-2">
+            <span
+              className="inline-block px-2 font-heading text-white tracking-wide rounded"
+              style={{
+                backgroundColor: fakeArtist.color.hex,
+                color: fakeArtist.color.text,
+              }}
+            >
+              {fakeArtist.name}
+            </span>{" "}
+            was Faking It
+          </h3>
+        </div>
+      )}
 
       {/* 1) Vote tally (sorted): */}
       <div className="mb-6 w-full max-w-md">
@@ -70,7 +88,7 @@ export default function PlayerResults() {
         Play Again
       </button>
 
-      <div className="grid grid-cols-2 gap-4 mt-8">
+      <div className="flex justify-center flex-wrap gap-4 mt-8">
         {previousArt.map((s, i) => {
           return <CanvasPreviousArtwork key={i} strokes={s} />;
         })}

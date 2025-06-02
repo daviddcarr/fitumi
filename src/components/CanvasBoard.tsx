@@ -7,7 +7,7 @@ interface CanvasBoardProps {
   readOnly?: boolean;
 }
 
-const BORDER_PADDING = 5;
+const BORDER_PADDING = 20;
 const PADDING_DOUBLED = BORDER_PADDING * 2;
 
 export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
@@ -150,13 +150,14 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     >
       <div
         style={{
-          width: `${canvasSize + PADDING_DOUBLED}px`,
-          height: `${canvasSize + PADDING_DOUBLED}px`,
+          width: `${canvasSize + BORDER_PADDING / 2}px`,
+          height: `${canvasSize + BORDER_PADDING / 2}px`,
         }}
         className={classNames(
           "rounded-[28px] relative overflow-hidden flex items-center justify-center",
-          currentPlayer?.id === player?.id &&
-            "after:animate-spin-background after:z-0 after:block after:absolute after:w-[150%] after:h-[150%] after:inset-[-25%] after:rounded-full after:bg-conic/increasing after:from-violet-700 after:via-lime-300 after:to-violet-700"
+          currentPlayer?.id === player?.id && !readOnly
+            ? "after:animate-spin-background after:z-0 after:block after:absolute after:w-[150%] after:h-[150%] after:inset-[-25%] after:rounded-full after:bg-conic/increasing after:from-violet-700 after:via-lime-300 after:to-violet-700"
+            : "border-2 border-gray-300"
         )}
       >
         <canvas
@@ -179,7 +180,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
       <div className="w-full h-full pointer-events-none absolute inset-0">
         {currentPlayer?.id !== player?.id && !readOnly && (
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+          <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
             <h2 className="font-heading text-purple-800 text-2xl">
               <span
                 className="inline-block px-2 font-heading text-white tracking-wide rounded"

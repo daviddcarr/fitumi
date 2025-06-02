@@ -2,6 +2,7 @@ import CanvasBoard from "@components/CanvasBoard";
 import PlayerList from "@components/PlayerList";
 import { useGame } from "@stores/useGame";
 import classNames from "classnames";
+import { FaInfoCircle, FaRegImages } from "react-icons/fa";
 
 const SubjectCard = ({ subject }: { subject: string | null }) => {
   return (
@@ -23,21 +24,21 @@ const SubjectCard = ({ subject }: { subject: string | null }) => {
 };
 
 const PlayerArtboard = () => {
-  const { player, players, state } = useGame();
-  const { currentSubject, fakeArtist } = state;
+  const { player, players, state, setShowInfo, setShowGallery } = useGame();
+  const { currentSubject, fakeArtist, previousArt } = state;
 
   if (!player) return null;
 
   return (
     <div
       className={classNames(
-        "w-full h-full grid",
+        "w-full min-h-screen h-full grid",
         player.leftHanded
           ? "lg:grid-cols-[1fr_auto]"
           : "lg:grid-cols-[auto_1fr]"
       )}
     >
-      <div className="lg:order-1 lg:max-h-screen max-w-screen">
+      <div className="lg:order-1 min-h-[75vh] lg:max-h-screen max-w-screen">
         {player && state && players.length > 0 && <CanvasBoard />}
       </div>
 
@@ -55,7 +56,24 @@ const PlayerArtboard = () => {
           subject={fakeArtist?.id !== player.id ? currentSubject : null}
         />
 
-        <PlayerList canEdit={false} />
+        <PlayerList canEdit={false} isLobby={false} />
+
+        <div className="flex items-center justify-center gap-2">
+          <button
+            className="p-2 text-white hover:text-purple-200"
+            onClick={() => setShowInfo(true)}
+          >
+            <FaInfoCircle className="text-2xl" />
+          </button>
+          {previousArt.length > 0 && (
+            <button
+              className="p-2 text-white hover:text-purple-200"
+              onClick={() => setShowGallery(true)}
+            >
+              <FaRegImages className="text-2xl" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
