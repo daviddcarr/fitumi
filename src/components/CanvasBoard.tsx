@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import type { Point } from "../lib/interfaces/room-state";
 import { useGame } from "../stores/useGame";
+import classNames from "classnames";
 
 interface CanvasBoardProps {
   readOnly?: boolean;
@@ -82,16 +83,18 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     }
   }, [strokes, currentStroke, players, currentPlayer, canvasSize]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!currentPlayer || !player) return;
     if (currentPlayer.id !== player.id) return;
     if (canvasSize === 0) return;
 
+    e.preventDefault();
+
     setIsDrawing(true);
 
     const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const rawX = e.nativeEvent.clientX - rect.left;
-    const rawY = e.nativeEvent.clientY - rect.top;
+    const rawX = e.clientX - rect.left;
+    const rawY = e.clientY - rect.top;
 
     const relX = rawX / canvasSize;
     const relY = rawY / canvasSize;
@@ -104,14 +107,16 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     ]);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!currentPlayer || !player) return;
     if (currentPlayer.id !== player.id || !isDrawing) return;
     if (canvasSize === 0) return;
 
+    e.preventDefault();
+
     const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const rawX = e.nativeEvent.clientX - rect.left;
-    const rawY = e.nativeEvent.clientY - rect.top;
+    const rawX = e.clientX - rect.left;
+    const rawY = e.clientY - rect.top;
 
     const relX = rawX / canvasSize;
     const relY = rawY / canvasSize;
@@ -125,10 +130,12 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     ]);
   };
 
-  const handleMouseUp = async () => {
+  const handlePointerUp = async (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
+    e.preventDefault();
     setIsDrawing(false);
 
+    if (currentStroke.length === 0) return;
     await addStroke(currentStroke);
     setCurrentStroke([]);
   };
@@ -142,14 +149,17 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
         ref={canvasRef}
         width={canvasSize}
         height={canvasSize}
-        onMouseDown={readOnly ? undefined : handleMouseDown}
-        onMouseMove={readOnly ? undefined : handleMouseMove}
-        onMouseUp={readOnly ? undefined : handleMouseUp}
-        className={
+        onPointerDown={readOnly ? undefined : handlePointerDown}
+        onPointerMove={readOnly ? undefined : handlePointerMove}
+        onPointerUp={readOnly ? undefined : handlePointerUp}
+        onPointerLeave={readOnly ? undefined : handlePointerUp}
+        style={{ touchAction: "none" }}
+        className={classNames(
+          "rounded-3xl",
           currentPlayer?.id === player?.id || readOnly
             ? "bg-white"
             : "bg-transparent"
-        }
+        )}
       />
     </div>
   );
