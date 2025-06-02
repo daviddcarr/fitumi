@@ -1,4 +1,3 @@
-import React from "react";
 import { useGame } from "@stores/useGame";
 import CanvasPreviousArtwork from "@components/CanvasPreviousArtwork";
 

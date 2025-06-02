@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useGame } from "@stores/useGame";
 import CanvasBoard from "@components/CanvasBoard";
 import type { Player } from "@lib/interfaces/player";

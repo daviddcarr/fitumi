@@ -1,6 +1,4 @@
 import { useGame } from "@stores/useGame";
-import classNames from "classnames";
-import { FaCrown, FaRegCheckCircle } from "react-icons/fa";
 import PlayerListItem from "./Item";
 
 interface PlayerListProps {
@@ -19,7 +17,12 @@ const PlayerList = ({ canEdit = false, isLobby = false }: PlayerListProps) => {
       <ul className="space-y-2">
         {players.map((p) => {
           return (
-            <PlayerListItem p={p} canEdit={canEdit} isLobby={isLobby} key={p.id} />
+            <PlayerListItem
+              p={p}
+              canEdit={canEdit}
+              isLobby={isLobby}
+              key={p.id}
+            />
           );
         })}
       </ul>
