@@ -14,22 +14,28 @@ export default function Home() {
     const newRoomCode = await createRoom(name);
     if (newRoomCode) {
       navigate(`/${newRoomCode}`);
-    } 
+    }
   };
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
+      {/* Animated Line Art Background */}
       <CanvasBackground />
 
-
+      {/* Create or Join UI */}
       <div className="relative z-10 p-4 h-full w-full flex justify-center items-center">
         <div className="flex flex-col max-w-md items-center space-y-2 p-6 bg-blurred">
+          {/* Header */}
           <h1 className="text-5xl font-bold mb-0 text-purple-800 font-heading tracking-widest ">
             FITUMI
           </h1>
-          <p className="text-sm text-slate-800 mb-8 tracking-wide ">Fake It 'Til U Make It</p>
-  
+          <p className="text-sm text-slate-800 mb-8 tracking-wide ">
+            Fake It 'Til U Make It
+          </p>
+
+          {/* Create or Join Grid */}
           <div className="grid md:grid-cols-[1fr_auto_1fr] gap-8  md:gap-4">
+            {/* Create Room Form */}
             <div className="space-y-2">
               <input
                 className="text-input"
@@ -45,9 +51,13 @@ export default function Home() {
                 Create Room
               </button>
             </div>
+
+            {/* "OR" Spacer */}
             <div className="flex items-center justify-center">
               <span className="text-purple-900 text-2xl !font-heading">OR</span>
             </div>
+
+            {/* Join Room Form */}
             <div className="space-y-2">
               <input
                 className="border p-2 w-full rounded border-purple-300 text-center text-input"
@@ -63,10 +73,9 @@ export default function Home() {
                 Join Room
               </button>
             </div>
-          </div>  
+          </div>
         </div>
       </div>
     </div>
-    );
-
+  );
 }

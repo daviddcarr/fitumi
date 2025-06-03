@@ -11,65 +11,7 @@ import PlayerResults from "./PlayerResults";
 import { FaTimes } from "react-icons/fa";
 import CanvasPreviousArtwork from "@components/CanvasPreviousArtwork";
 
-export type Player = {
-  id: string;
-  name: string;
-  color: string;
-  slug: string;
-  room_id: string;
-  created_at: string;
-  is_fake_artist?: boolean;
-};
-
-function GameRoomUI() {
-  const { roomCode, playerSlug } = useParams();
-  const {
-    roomId,
-    player,
-    state,
-    initRoom,
-    loadPlayer,
-    subscribe,
-    unsubscribe,
-  } = useGame();
-
-  // Room State
-  useEffect(() => {
-    if (!roomCode) return;
-    initRoom(roomCode).then(subscribe);
-    return () => unsubscribe();
-  }, [roomCode, initRoom, subscribe, unsubscribe]);
-
-  useEffect(() => {
-    if (!roomId || !playerSlug) return;
-    loadPlayer(roomId, playerSlug);
-  }, [roomId, playerSlug, loadPlayer]);
-
-  if (!roomId) {
-    return <div className="p-4">Loading room...</div>;
-  }
-
-  if (!player) {
-    return <PlayerJoin />;
-  }
-
-  if (state.status === "lobby" && player) {
-    return <PlayerLobby />;
-  }
-
-  if (state.status === "in-progress" && player) {
-    return <PlayerArtboard />;
-  }
-
-  if (state.status === "voting" && player) {
-    return <PlayerVoting />;
-  }
-
-  if (state.status === "results" && player) {
-    return <PlayerResults />;
-  }
-}
-
+// Main Game Room Wrapper, Contains UI Modals used on multiple layouts.
 export default function GameRoom() {
   const { state, showInfo, showGallery, setShowInfo, setShowGallery } =
     useGame();
@@ -77,10 +19,13 @@ export default function GameRoom() {
 
   return (
     <div className="w-full min-h-full relative">
+      {/* Main Game Room UI, See Definition Below */}
       <GameRoomUI />
 
+      {/* Modal UIs */}
       {(showInfo || showGallery) && (
         <div className="absolute inset-0 flex justify-center items-center z-30 backdrop-blur-sm p-2">
+          {/* How To Play Instructional Modal */}
           {showInfo && (
             <div className="bg-purple-blurred p-4 max-w-xl">
               <div className="grid grid-rows-[auto_1fr] gap-4">
@@ -157,12 +102,13 @@ export default function GameRoom() {
             </div>
           )}
 
+          {/* Previous Art Modal */}
           {showGallery && previousArt.length > 0 && (
             <div className="bg-purple-blurred max-w-3xl p-4">
               <div className="grid grid-rows-[auto_1fr] gap-4">
                 <div className="flex justify-between items-center gap-4">
                   <h2 className="text-2xl font-bold font-heading text-white tracking-wider">
-                    Previous Pieces
+                    Previous Art
                   </h2>
                   <button
                     className="h-10 w-10 rounded-full bg-purple-950 hover:bg-purple-600 flex items-center justify-center"
@@ -186,4 +132,53 @@ export default function GameRoom() {
       )}
     </div>
   );
+}
+
+// Main Game Room UI, based on state
+function GameRoomUI() {
+  const { roomCode, playerSlug } = useParams();
+  const {
+    roomId,
+    player,
+    state,
+    initRoom,
+    loadPlayer,
+    subscribe,
+    unsubscribe,
+  } = useGame();
+
+  useEffect(() => {
+    if (!roomCode) return;
+    initRoom(roomCode).then(subscribe);
+    return () => unsubscribe();
+  }, [roomCode, initRoom, subscribe, unsubscribe]);
+
+  useEffect(() => {
+    if (!roomId || !playerSlug) return;
+    loadPlayer(roomId, playerSlug);
+  }, [roomId, playerSlug, loadPlayer]);
+
+  if (!roomId) {
+    return <div className="p-4">Loading room...</div>;
+  }
+
+  if (!player) {
+    return <PlayerJoin />;
+  }
+
+  if (state.status === "lobby" && player) {
+    return <PlayerLobby />;
+  }
+
+  if (state.status === "in-progress" && player) {
+    return <PlayerArtboard />;
+  }
+
+  if (state.status === "voting" && player) {
+    return <PlayerVoting />;
+  }
+
+  if (state.status === "results" && player) {
+    return <PlayerResults />;
+  }
 }
