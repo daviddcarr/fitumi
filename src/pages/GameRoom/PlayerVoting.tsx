@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useGame } from "@stores/useGame";
 import CanvasBoard from "@components/CanvasBoard";
 import type { Player } from "@lib/interfaces/player";
@@ -73,7 +73,6 @@ export default function PlayerVoting() {
             {nonGM
               .filter((p) => p.id !== player.id)
               .map((p) => {
-
                 const pColor = getColor(p.color);
                 return (
                   <button
@@ -86,9 +85,8 @@ export default function PlayerVoting() {
                   >
                     {p.name}
                   </button>
-                )
-              })
-            }
+                );
+              })}
           </div>
         )}
 
