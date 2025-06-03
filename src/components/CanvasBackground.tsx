@@ -115,7 +115,7 @@ export default function CanvasBackground() {
     const H = canvas.clientHeight;
 
     // Add translucent black rectangle over entire canvas to slowly fade old strokes
-    ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.001)";
     ctx.fillRect(0, 0, W, H);
 
     const strokes = strokesRef.current;

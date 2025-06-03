@@ -1,5 +1,3 @@
-import type { PlayerColor } from "@data/constants";
-
 export interface Player {
   id: string;
   name: string;
