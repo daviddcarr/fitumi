@@ -14,7 +14,7 @@ const PlayerList = ({ canEdit = false, isLobby = false }: PlayerListProps) => {
   return (
     <>
       {/* Player List */}
-      <div className="w-full @container/player-list">
+      <div className="w-full @container/player-list p-2 bg-purple-200/10 rounded-4xl">
         <ul className="flex flex-col gap-2 @sm/player-list:flex-row @sm/player-list:flex-wrap">
           {players.map((p) => {
             return (

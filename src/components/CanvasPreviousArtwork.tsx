@@ -1,3 +1,4 @@
+import { getColor } from "@data/constants";
 import type { Stroke } from "@lib/interfaces/room-state";
 import classNames from "classnames";
 import { useRef, useEffect, useState } from "react";
@@ -48,7 +49,8 @@ const CanvasPreviousArtwork = ({ strokes }: CanvasPreviousArtworkProps) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     strokes.forEach((stroke) => {
-      ctx.strokeStyle = stroke.color.hex;
+      const color = getColor(stroke.color);
+      ctx.strokeStyle = color.hex;
       ctx.lineWidth = 1;
       ctx.beginPath();
 
@@ -78,7 +80,8 @@ const CanvasPreviousArtwork = ({ strokes }: CanvasPreviousArtworkProps) => {
     offscreenCtx.fillRect(0, 0, size, size);
 
     strokes.forEach((stroke) => {
-      offscreenCtx.strokeStyle = stroke.color.hex;
+      const color = getColor(stroke.color);
+      offscreenCtx.strokeStyle = color.hex;
       offscreenCtx.lineWidth = (size / BASE_SIZE) * 1;
       offscreenCtx.beginPath();
 

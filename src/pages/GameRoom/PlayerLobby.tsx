@@ -3,6 +3,7 @@ import CanvasBackground from "@components/CanvasBackground";
 import PlayerList from "@components/PlayerList";
 import { BASIC_SUBJECTS } from "@data/subject-sets";
 import { useGame } from "@stores/useGame";
+import classNames from "classnames";
 import { useEffect, useState } from "react";
 import {
   FaCheckCircle,
@@ -27,8 +28,9 @@ export default function PlayerLobby() {
     setGameMaster,
     setShowInfo,
     setShowGallery,
+    setStrokeCount,
   } = useGame();
-  const { gameMaster, readiness, currentSubject, previousArt } = state;
+  const { gameMaster, readiness, currentSubject, previousArt, strokesPerPlayer } = state;
 
   const [subject, setSubject] = useState<string>(currentSubject || "");
 
@@ -75,7 +77,7 @@ export default function PlayerLobby() {
           {/* Ready Button */}
           <div className="flex flex-col sm:flex-row gap-2 items-stretch w-full">
             <button
-              className={`p-2 h-full cursor-pointer rounded flex justify-center items-center gap-2 text-white hover:bg-gray-700 ${
+              className={`p-2 h-full cursor-pointer rounded-lg flex justify-center items-center gap-2 text-white hover:bg-gray-700 ${
                 readiness[player?.id] ? "bg-green-600" : "bg-gray-400"
               } ${
                 gameMaster?.id !== player?.id ? "w-full" : "w-full sm:w-max"
@@ -95,7 +97,7 @@ export default function PlayerLobby() {
 
             {gameMaster && gameMaster.id === player?.id && (
               <button
-                className="w-full grow bg-gray-700 flex items-center gap-2 justify-center text-white py-2 rounded disabled:opacity-50 disabled:cursor-auto cursor-pointer hover:bg-purple-700"
+                className="w-full grow bg-gray-700 flex items-center gap-2 justify-center text-white py-2 rounded-lg disabled:opacity-50 disabled:cursor-auto cursor-pointer hover:bg-purple-700"
                 onClick={() => setGameMaster(null)}
               >
                 <FaRobot /> No Game Master
@@ -104,7 +106,7 @@ export default function PlayerLobby() {
 
             {!gameMaster && (
               <button
-                className="w-full grow bg-gray-700 flex items-center gap-2 justify-center text-white py-2 rounded disabled:opacity-50 disabled:cursor-auto cursor-pointer hover:bg-purple-700"
+                className="w-full grow bg-gray-700 flex items-center gap-2 justify-center text-white py-2 rounded-lg disabled:opacity-50 disabled:cursor-auto cursor-pointer hover:bg-purple-700"
                 onClick={() => setGameMaster(player)}
               >
                 <FaCrown /> Crown Me
@@ -113,7 +115,7 @@ export default function PlayerLobby() {
 
             {previousArt.length > 0 && (
               <button
-                className="w-full sm:w-max bg-purple-800 flex items-center gap-2 justify-center text-white py-2 px-4 rounded cursor-pointer hover:bg-purple-700"
+                className="w-full sm:w-max bg-purple-800 flex items-center gap-2 justify-center text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-purple-700"
                 onClick={() => setShowGallery(true)}
               >
                 <FaRegImages /> <span className="sm:hidden">Gallery</span>
@@ -133,8 +135,9 @@ export default function PlayerLobby() {
                   artists to draw.
                 </p>
               </div>
+
               <div className="flex flex-col sm:flex-row gap-2">
-                <div className="border rounded border-purple-300 flex items-center grow">
+                <div className="border rounded-lg border-purple-300 flex items-center grow">
                   <input
                     type="text"
                     placeholder="Subject"
@@ -164,7 +167,7 @@ export default function PlayerLobby() {
                     subject === currentSubject
                       ? "bg-green-600 hover:bg-green-900"
                       : "bg-purple-600 hover:bg-purple-800"
-                  } text-white py-2 px-4 flex items-center justify-center rounded cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
+                  } text-white py-2 px-4 flex items-center justify-center rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
                   onClick={() => submitSubject(subject)}
                   disabled={!subject.trim()}
                 >
@@ -179,13 +182,32 @@ export default function PlayerLobby() {
                   !players.every((p) => readiness[p.id]) ||
                   (gameMaster && !currentSubject)
                 }
-                className="w-full bg-purple-800 hover:bg-purple-900 text-white py-2 rounded cursor-pointer disabled:cursor-auto disabled:opacity-50"
+                className="w-full bg-purple-800 hover:bg-purple-900 text-white py-2 rounded-lg cursor-pointer disabled:cursor-auto disabled:opacity-50"
                 onClick={() => startGame()}
               >
                 Start Game
               </button>
             </>
           )}
+
+          <div className="flex border-[1px] border-purple-300 rounded-lg">
+                <span className="p-2 grow">Stroke Count:</span>
+                {
+                  [1,2,3,4].map((c) => (
+                    <button
+                      key={c}
+                      disabled={strokesPerPlayer === c}
+                      className={classNames(
+                        "py-2 px-4 border-l-[1px] border-purple-300",
+                        c === strokesPerPlayer ? "bg-purple-300" : "bg-transparent cursor-pointer hover:bg-purple-100"
+                      )}
+                      onClick={() => setStrokeCount(c)}
+                    >
+                      {c}
+                    </button>
+                  ))
+                }
+            </div>
         </div>
       </div>
     </div>

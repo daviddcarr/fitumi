@@ -1,5 +1,7 @@
 import { useGame } from "@stores/useGame";
 import CanvasPreviousArtwork from "@components/CanvasPreviousArtwork";
+import { getColor } from "@data/constants";
+import classNames from "classnames";
 
 export default function PlayerResults() {
   const { players, state, nextRound } = useGame();
@@ -9,7 +11,10 @@ export default function PlayerResults() {
   const { voteCounts, ranked, fakeWins } = state.results;
   const scoreboard = state.scores || {};
 
+  if (!fakeArtist) return null;
+
   const outcomeMsg = fakeWins ? "The Faker Made It!" : "Artists Win!";
+  const fakeArtistColor = getColor(fakeArtist?.color);
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center p-8 bg-purple-950">
@@ -20,17 +25,17 @@ export default function PlayerResults() {
       {/* Fake Artist Identity */}
       {fakeArtist && (
         <div className="mb-6 w-full max-w-md text-center">
-          <h3 className="text-2xl font-semibold font-heading text-white mb-2">
+          <h3 className="text-2xl font-semibold font-heading  mb-2">
             <span
-              className="inline-block px-2 font-heading text-white tracking-wide rounded"
-              style={{
-                backgroundColor: fakeArtist.color.hex,
-                color: fakeArtist.color.text,
-              }}
+              className={classNames(
+                "inline-block px-3 font-heading tracking-wide rounded-full",
+                fakeArtistColor.bg,
+                fakeArtistColor.text
+              )}
             >
               {fakeArtist.name}
             </span>{" "}
-            was Faking It
+            <span className="text-white">was Faking It</span>
           </h3>
         </div>
       )}
@@ -47,7 +52,7 @@ export default function PlayerResults() {
             return (
               <li
                 key={pid}
-                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded mb-1"
+                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-lg mb-1"
               >
                 <span className="font-medium">{p?.name}</span>
                 <span className="text-purple-400">
@@ -70,7 +75,7 @@ export default function PlayerResults() {
             return (
               <li
                 key={p.id}
-                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded mb-1"
+                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-lg mb-1"
               >
                 <span>{p.name}</span>
                 <span className="font-semibold">{sc}</span>

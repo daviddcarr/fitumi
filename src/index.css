@@ -8,6 +8,32 @@
   --font-body: var(--font-sans);
   --font-heading: var(--font-serif);
 
+  --color-red: #ff0000;
+  --color-orange: #ff6600;
+  --color-yellow: #ffcc00;
+  --color-lime: #99ff33;
+  --color-green: #00cc00;
+  --color-teal: #009999;
+  --color-cyan: #00ccff;
+  --color-indigo: #0000ff;
+  --color-purple: #6600cc;
+  --color-magenta: #cc0099;
+  --color-pink: #ff66ff;
+  --color-brown: #663300;
+
+  --color-red-hover: #cc0000;
+  --color-orange-hover: #cc6600;
+  --color-yellow-hover: #e6b800;
+  --color-lime-hover: #99cc00;
+  --color-green-hover: #009933;
+  --color-teal-hover: #006666;
+  --color-cyan-hover: #0099cc;
+  --color-indigo-hover: #0000cc;
+  --color-purple-hover: #6600cc;
+  --color-magenta-hover: #990073;
+  --color-pink-hover: #ff1aff;
+  --color-brown-hover: #331a00;
+
   --animate-spin-background: spinBackground 5s linear infinite;
 
   @keyframes spinBackground {
@@ -31,9 +57,9 @@ input {
 }
 
 .text-input {
-  @apply border p-2 w-full rounded border-purple-300 focus:outline-purple-900 text-purple-950 text-center placeholder:text-purple-800;
+  @apply border p-2 w-full rounded-lg border-purple-300 focus:outline-purple-900 text-purple-950 text-center placeholder:text-purple-800;
 }
 
 .purple-button {
-  @apply bg-purple-800 hover:bg-purple-900 cursor-pointer text-white px-4 py-2 rounded disabled:bg-purple-700 disabled:text-purple-400 disabled:cursor-auto;
+  @apply bg-purple-800 hover:bg-purple-900 cursor-pointer text-white px-4 py-2 rounded-lg disabled:bg-purple-700 disabled:text-purple-400 disabled:cursor-auto;
 }

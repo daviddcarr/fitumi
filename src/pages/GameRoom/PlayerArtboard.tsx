@@ -8,20 +8,22 @@ const SubjectCard = ({ subject }: { subject: string | null }) => {
   return (
     <div
       className={classNames(
-        "p-2 h-20 font-heading capitalize border-2 min-w-24 border-white rounded-lg text-white flex flex-col items-center justify-center",
+        "p-2 py-4 h-20 h-max font-heading capitalize border-2 min-w-24 border-white rounded-3xl text-white text-center",
         subject ? "text-2xl" : "text-4xl"
       )}
     >
-      <span className="text-sm uppercase tracking-widest opacity-50">
-        Subject
-      </span>
-      {subject ? (
-        <span>{subject}</span>
-      ) : (
-        <div>
-          ? <span className="text-6xl !font-heading">?</span> ?
-        </div>
-      )}
+      <div className="flex flex-col items-center justify-center">
+        <span className="text-sm uppercase tracking-widest opacity-50">
+          Subject
+        </span>
+        {subject ? (
+          <span>{subject}</span>
+        ) : (
+          <div>
+            <span className="animate-pulse">?</span> <span className="text-5xl !font-heading animate-pulse" style={{ animationDelay: "0.4s"}}>?</span> <span className="animate-pulse" style={{ animationDelay: "0.8s"}}>?</span> 
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -47,7 +49,7 @@ const PlayerArtboard = () => {
 
       <div
         className={classNames(
-          "p-2 min-w-[200px] bg-purple-950 space-y-4",
+          "p-2 px-4 min-w-[200px] bg-purple-950 space-y-4",
           player.leftHanded ? "lg:order-2" : "lg:order-none"
         )}
       >
@@ -56,7 +58,7 @@ const PlayerArtboard = () => {
         </h3>
 
         <div className="@container/player-info">
-          <div className="flex flex-col @sm/player-info:flex-row gap-2">
+          <div className="flex flex-col @md/player-info:grid @md/player-info:grid-cols-[auto_1fr] gap-2">
             <SubjectCard
               subject={fakeArtist?.id !== player.id ? currentSubject : null}
             />

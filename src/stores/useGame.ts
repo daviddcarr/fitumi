@@ -35,6 +35,7 @@ interface GameActions {
   loadPlayer: (roomId: string, playerSlug: string) => Promise<void>;
   nextRound: () => Promise<void>;
   setGameMaster: (player: Player | null) => Promise<void>;
+  setStrokeCount: (count: number) => Promise<void>;
   setReady: (ready: boolean) => Promise<void>;
   startGame: () => Promise<void>;
   submitSubject: (subject: string) => Promise<void>;
@@ -95,16 +96,23 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       .select("*")
       .eq("code", code)
       .single();
-    if (roomError || !room) return;
-    set({ roomCode: code, roomId: room.id, state: room.state });
-
+    if (roomError || !room) {
+      console.error(roomError);
+      return;
+    };
+    
     const { data: existingPlayers, error: playerError } = await supabase
-      .from("players")
-      .select("*")
-      .eq("room_id", room.id)
-      .order("created_at", { ascending: true });
-    if (playerError || !existingPlayers) return;
+    .from("players")
+    .select("*")
+    .eq("room_id", room.id)
+    .order("created_at", { ascending: true });
+    if (playerError || !existingPlayers) {
+      console.error(playerError);
+      return;
+    };
+
     set({ players: existingPlayers });
+    set({ roomCode: code, roomId: room.id, state: room.state });
   },
 
   /**
@@ -120,10 +128,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     // Set up Player Data
     const availableColors: PlayerColor[] = PLAYER_COLORS.filter(
-      (color) => !players.some((player) => player.color.name === color.name)
+      (color) => !players.some((player) => player.color === color.name)
     );
 
-    const color = availableColors[players.length % PLAYER_COLORS.length];
+    const color = availableColors[players.length % PLAYER_COLORS.length].name;
     const base = name.toLowerCase().replace(/\s+/g, "-");
     const suffix = Math.random().toString(36).substring(2, 5);
     const slug = `${base}-${suffix}`;
@@ -134,7 +142,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       .insert([{ room_id: roomId, name, color, slug, leftHanded }])
       .select()
       .single();
-    if (error || !data) return null;
+    if (error || !data) {
+      console.error(error);
+      return;
+    };
     set({ player: data });
 
     // Check if player is first or second, make them Game Master or Current Player
@@ -170,6 +181,17 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     set({ state: newState });
   },
 
+  setStrokeCount: async (count: number) => {
+    const { state, roomId } = get();
+    if (!roomId || !state) return;
+    const newState: RoomState = { ...state, strokesPerPlayer: count };
+    await supabase
+      .from("rooms")
+      .update({ state: newState })
+      .eq("id", roomId);
+    set({ state: newState });
+  },
+
   addStroke: async (points: Point[]) => {
     const { roomId, player, players, state } = get();
     if (!roomId || !player || !players || !state) return;
@@ -194,7 +216,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       currentPlayer: nextPlayer,
     };
 
-    const totalNeeded = nonGM.length * STROKES_PER_PLAYER;
+    const { strokesPerPlayer } = state;
+    const totalNeeded = nonGM.length * (strokesPerPlayer ?? STROKES_PER_PLAYER);
 
     if ((newState.strokes?.length ?? 0) >= totalNeeded) {
       const previousArt: Stroke[][] = state.previousArt ?? [];

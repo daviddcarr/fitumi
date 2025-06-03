@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useGame } from "@stores/useGame";
 import CanvasBoard from "@components/CanvasBoard";
 import type { Player } from "@lib/interfaces/player";
+import { getColor } from "@data/constants";
+import classNames from "classnames";
 
 export default function PlayerVoting() {
   const { player, players, state, submitVote, finalizeVoting } = useGame();
@@ -61,7 +63,7 @@ export default function PlayerVoting() {
   const hasVoted = state.votes && !!state.votes[player.id];
 
   return (
-    <div className="min-h-full w-full bg-purple-950 overflow-scroll">
+    <div className="min-h-screen w-full bg-purple-950 overflow-scroll">
       <div className="px-2 py-4 flex flex-col items-center justify-center">
         <h2 className="text-3xl sm:text-5xl font-heading font-semibold text-white">
           Who's Faking It?
@@ -70,22 +72,23 @@ export default function PlayerVoting() {
           <div className="flex flex-col sm:flex-row justify-center items-center md:grid-cols-3 gap-4 w-full py-4">
             {nonGM
               .filter((p) => p.id !== player.id)
-              .map((p) => (
-                <button
-                  className="text-white p-2 cursor-pointer rounded disabled:opacity-50 w-full sm:w-auto hover:bg-[var(--hover-color)]"
-                  key={p.id}
-                  style={
-                    {
-                      backgroundColor: p.color.hex,
-                      color: p.color.text,
-                      "--hover-color": p.color.hover,
-                    } as React.CSSProperties
-                  }
-                  onClick={() => submitVote(p.id)}
-                >
-                  {p.name}
-                </button>
-              ))}
+              .map((p) => {
+
+                const pColor = getColor(p.color);
+                return (
+                  <button
+                    className={classNames(
+                      `${pColor.text} ${pColor.bg} ${pColor.hoverBg}`,
+                      "p-2 px-4 cursor-pointer rounded-full w-full sm:w-auto font-heading text-xl tracking-wider"
+                    )}
+                    key={p.id}
+                    onClick={() => submitVote(p.id)}
+                  >
+                    {p.name}
+                  </button>
+                )
+              })
+            }
           </div>
         )}
 

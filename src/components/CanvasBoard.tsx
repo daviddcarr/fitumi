@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import type { Point } from "../lib/interfaces/room-state";
 import { useGame } from "../stores/useGame";
 import classNames from "classnames";
+import { getColor } from "@data/constants";
+import type { PlayerColor } from "@data/constants";
 
 interface CanvasBoardProps {
   readOnly?: boolean;
@@ -20,6 +22,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const [canvasSize, setCanvasSize] = useState<number>(0);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
+  const [currentPlayerColor, setCurrentPlayerColor] = useState<PlayerColor>();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -36,6 +39,12 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   }, []);
 
   useEffect(() => {
+    if (currentPlayer) {
+      setCurrentPlayerColor(getColor(currentPlayer.color));
+    }
+  }, [currentPlayer]);
+
+  useEffect(() => {
     const canvas = canvasRef.current!;
     if (!canvas) return;
 
@@ -47,9 +56,11 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    
     // Draw Saved Strokes
     strokes.forEach((stroke) => {
-      context.strokeStyle = stroke.color.hex;
+      const hex = getColor(stroke.color).hex;
+      context.strokeStyle = hex;
       context.lineWidth = 2;
       context.beginPath();
 
@@ -67,8 +78,8 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     });
 
     // Draw Current Strokes
-    if (currentStroke.length > 0) {
-      context.strokeStyle = currentPlayer?.color.hex || "black";
+    if (currentStroke.length > 0 && currentPlayer) {
+      context.strokeStyle = currentPlayerColor?.hex || "black";
       context.lineWidth = 2;
       context.beginPath();
 
@@ -183,10 +194,13 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
           <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
             <h2 className="font-heading text-purple-800 text-2xl">
               <span
-                className="inline-block px-2 font-heading text-white tracking-wide rounded"
+                className={classNames(
+                  "inline-block px-2 font-heading tracking-wide rounded",
+                  currentPlayerColor?.text
+                )}
                 style={{
-                  backgroundColor: currentPlayer?.color.hex,
-                  color: currentPlayer?.color.text,
+                  backgroundColor: currentPlayerColor?.hex,
+                  color: currentPlayerColor?.text,
                 }}
               >
                 {currentPlayer?.name}
