@@ -30,7 +30,13 @@ export default function PlayerLobby() {
     setShowGallery,
     setStrokeCount,
   } = useGame();
-  const { gameMaster, readiness, currentSubject, previousArt, strokesPerPlayer } = state;
+  const {
+    gameMaster,
+    readiness,
+    currentSubject,
+    previousArt,
+    strokesPerPlayer,
+  } = state;
 
   const [subject, setSubject] = useState<string>(currentSubject || "");
 
@@ -45,11 +51,9 @@ export default function PlayerLobby() {
         startGame();
       }
     }
-  }, [gameMaster, readiness]);
+  }, [gameMaster, readiness, players, startGame]);
 
-  console.log("Player Lobby", player, players, state);
   if (!player) return null;
-  console.log("Rendering Lobby");
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -191,23 +195,23 @@ export default function PlayerLobby() {
           )}
 
           <div className="flex border-[1px] border-purple-300 rounded-lg">
-                <span className="p-2 grow">Stroke Count:</span>
-                {
-                  [1,2,3,4].map((c) => (
-                    <button
-                      key={c}
-                      disabled={strokesPerPlayer === c}
-                      className={classNames(
-                        "py-2 px-4 border-l-[1px] border-purple-300",
-                        c === strokesPerPlayer ? "bg-purple-300" : "bg-transparent cursor-pointer hover:bg-purple-100"
-                      )}
-                      onClick={() => setStrokeCount(c)}
-                    >
-                      {c}
-                    </button>
-                  ))
-                }
-            </div>
+            <span className="p-2 grow">Stroke Count:</span>
+            {[1, 2, 3, 4].map((c) => (
+              <button
+                key={c}
+                disabled={strokesPerPlayer === c}
+                className={classNames(
+                  "py-2 px-4 border-l-[1px] border-purple-300",
+                  c === strokesPerPlayer
+                    ? "bg-purple-300"
+                    : "bg-transparent cursor-pointer hover:bg-purple-100"
+                )}
+                onClick={() => setStrokeCount(c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

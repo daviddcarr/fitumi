@@ -90,7 +90,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
   },
 
   initRoom: async (code: string) => {
-    console.log("Init Room: ", code);
     const { data: room, error: roomError } = await supabase
       .from("rooms")
       .select("*")
@@ -99,17 +98,17 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (roomError || !room) {
       console.error(roomError);
       return;
-    };
-    
+    }
+
     const { data: existingPlayers, error: playerError } = await supabase
-    .from("players")
-    .select("*")
-    .eq("room_id", room.id)
-    .order("created_at", { ascending: true });
+      .from("players")
+      .select("*")
+      .eq("room_id", room.id)
+      .order("created_at", { ascending: true });
     if (playerError || !existingPlayers) {
       console.error(playerError);
       return;
-    };
+    }
 
     set({ players: existingPlayers });
     set({ roomCode: code, roomId: room.id, state: room.state });
@@ -145,7 +144,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (error || !data) {
       console.error(error);
       return;
-    };
+    }
     set({ player: data });
 
     // Check if player is first or second, make them Game Master or Current Player
@@ -185,10 +184,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const { state, roomId } = get();
     if (!roomId || !state) return;
     const newState: RoomState = { ...state, strokesPerPlayer: count };
-    await supabase
-      .from("rooms")
-      .update({ state: newState })
-      .eq("id", roomId);
+    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
     set({ state: newState });
   },
 
@@ -236,8 +232,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
   },
 
   setReady: async (ready: boolean) => {
-    const { player, state, roomId, players } = get();
-    console.log("Try set ready", ready, player, state, players);
+    const { player, state, roomId } = get();
     if (!player || !state) return;
     const newReadinesss = { ...state.readiness, [player.id]: ready };
     const newState = { ...state, readiness: newReadinesss };

@@ -22,8 +22,6 @@ const PlayerListItem = ({
   const { gameMaster, readiness, currentPlayer } = state;
   const [showColorPicker, setShowColorPicker] = useState(false);
 
-  console.log("Player List Item", p);
-
   const handleColorChange = (color: string) => {
     updatePlayer({ ...p, color });
     setShowColorPicker(false);
@@ -56,18 +54,17 @@ const PlayerListItem = ({
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center"
               style={{ backgroundColor: playerColor.hex }}
-              >
-              {
-                !isLobby && currentPlayer?.id === p.id && (
-                  <FaPaintbrush className={classNames(
-                    "text-2xl",
-                    playerColor?.text
-                  )} />
-                )
-              }
+            >
+              {!isLobby && currentPlayer?.id === p.id && (
+                <FaPaintbrush
+                  className={classNames("text-2xl", playerColor?.text)}
+                />
+              )}
             </div>
           )}
-          <span className=" font-heading text-xl tracking-widest mr-2">{p.name}</span>
+          <span className=" font-heading text-xl tracking-widest mr-2">
+            {p.name}
+          </span>
 
           {isLobby && readiness[p.id] && (
             <FaRegCheckCircle className="text-green-400" />
@@ -104,7 +101,7 @@ const PlayerListItem = ({
                       !isTaken && c.hoverBorder,
                       c.border,
                       "min-w-9 w-full border-4 h-9 rounded-3xl flex items-center justify-center disabled:opacity-50 cursor-pointer disabled:cursor-auto",
-                      c.bg,
+                      c.bg
                     )}
                     disabled={isTaken}
                     onClick={() => handleColorChange(c.name)}
