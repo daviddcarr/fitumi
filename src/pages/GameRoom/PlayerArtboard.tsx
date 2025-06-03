@@ -8,16 +8,19 @@ const SubjectCard = ({ subject }: { subject: string | null }) => {
   return (
     <div
       className={classNames(
-        "p-2 h-20 font-heading capitalize border-2 border-white rounded-lg text-white flex items-center justify-center",
+        "p-2 h-20 font-heading capitalize border-2 min-w-24 border-white rounded-lg text-white flex flex-col items-center justify-center",
         subject ? "text-2xl" : "text-4xl"
       )}
     >
+      <span className="text-sm uppercase tracking-widest opacity-50">
+        Subject
+      </span>
       {subject ? (
-        subject
+        <span>{subject}</span>
       ) : (
-        <>
+        <div>
           ? <span className="text-6xl !font-heading">?</span> ?
-        </>
+        </div>
       )}
     </div>
   );
@@ -52,11 +55,15 @@ const PlayerArtboard = () => {
           {state.name}
         </h3>
 
-        <SubjectCard
-          subject={fakeArtist?.id !== player.id ? currentSubject : null}
-        />
+        <div className="@container/player-info">
+          <div className="flex flex-col @sm/player-info:flex-row gap-2">
+            <SubjectCard
+              subject={fakeArtist?.id !== player.id ? currentSubject : null}
+            />
 
-        <PlayerList canEdit={false} isLobby={false} />
+            <PlayerList canEdit={false} isLobby={false} />
+          </div>
+        </div>
 
         <div className="flex items-center justify-center gap-2">
           <button
