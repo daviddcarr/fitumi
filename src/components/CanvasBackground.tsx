@@ -114,8 +114,14 @@ export default function CanvasBackground() {
     const W = canvas.clientWidth;
     const H = canvas.clientHeight;
 
-    // Add translucent black rectangle over entire canvas to slowly fade old strokes
-    ctx.fillStyle = "rgba(255, 255, 255, 0.001)";
+    // Add a slight blur every frame to soften the strokes over time
+    ctx.save();
+    ctx.filter = "blur(0.5px)";
+    ctx.drawImage(canvas, 0, 0, W, H);
+    ctx.restore();
+
+    // Add translucent white rectangle over entire canvas to slowly fade old strokes
+    ctx.fillStyle = "rgba(255, 255, 255, 0.01)";
     ctx.fillRect(0, 0, W, H);
 
     const strokes = strokesRef.current;

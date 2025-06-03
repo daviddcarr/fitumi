@@ -8,7 +8,7 @@ const SubjectCard = ({ subject }: { subject: string | null }) => {
   return (
     <div
       className={classNames(
-        "p-2 py-4 h-20 h-max font-heading capitalize border-2 min-w-24 border-white rounded-3xl text-white text-center",
+        "p-4 h-max font-heading capitalize border-2 min-w-24 border-white rounded-3xl text-white text-center",
         subject ? "text-2xl" : "text-4xl"
       )}
     >
@@ -20,7 +20,16 @@ const SubjectCard = ({ subject }: { subject: string | null }) => {
           <span>{subject}</span>
         ) : (
           <div>
-            <span className="animate-pulse">?</span> <span className="text-5xl !font-heading animate-pulse" style={{ animationDelay: "0.4s"}}>?</span> <span className="animate-pulse" style={{ animationDelay: "0.8s"}}>?</span> 
+            <span className="animate-pulse">?</span>{" "}
+            <span
+              className="text-5xl !font-heading animate-pulse"
+              style={{ animationDelay: "0.4s" }}
+            >
+              ?
+            </span>{" "}
+            <span className="animate-pulse" style={{ animationDelay: "0.8s" }}>
+              ?
+            </span>
           </div>
         )}
       </div>

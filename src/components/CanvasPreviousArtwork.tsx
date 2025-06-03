@@ -124,6 +124,10 @@ const CanvasPreviousArtwork = ({ strokes }: CanvasPreviousArtworkProps) => {
         onClick={() => setShowDownloadOptions(true)}
       ></canvas>
 
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none group-hover:opacity-100 backdrop-blur-[2px]">
+        <FaFileDownload className="text-4xl" />
+      </div>
+
       <div
         className={classNames(
           "absolute inset-0 flex flex-col items-center justify-center",
@@ -148,7 +152,7 @@ const CanvasPreviousArtwork = ({ strokes }: CanvasPreviousArtworkProps) => {
             className=" col-span-2 bg-white hover:bg-purple-800 hover:text-white flex gap-1 items-center justify-center rounded-full p-2 cursor-pointer"
             onClick={() => setShowDownloadOptions(false)}
           >
-            <FaTimes />
+            <FaTimes className="text-2xl" />
           </button>
         </div>
       </div>
