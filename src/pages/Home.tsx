@@ -46,7 +46,7 @@ export default function Home() {
               <button
                 className="purple-button w-full"
                 onClick={initRoom}
-                disabled={!name && name.length <= 4}
+                disabled={!name || name.length <= 4}
               >
                 Create Room
               </button>
@@ -67,7 +67,7 @@ export default function Home() {
               />
               <button
                 className="purple-button w-full"
-                disabled={!roomCode && roomCode.length !== 5}
+                disabled={!roomCode || roomCode.length !== 5}
                 onClick={() => navigate("/" + roomCode)}
               >
                 Join Room

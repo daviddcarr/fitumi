@@ -35,7 +35,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     name: "Yellow",
     hex: "#ffcc00",
     hover: "#e6b800",
-    text: "#text-black",
+    text: "text-black",
     bg: "bg-yellow",
     hoverBg: "hover:bg-yellow-hover",
     border: "border-yellow",
