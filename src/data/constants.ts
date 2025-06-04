@@ -1,4 +1,4 @@
-export const STROKES_PER_PLAYER = 2;
+export const DEFAULT_STROKES_PER_PLAYER = 2;
 export const DEFAULT_VOTING_TIME = 15;
 
 export type PlayerColor = {

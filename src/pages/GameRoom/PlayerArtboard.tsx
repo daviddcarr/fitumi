@@ -4,7 +4,7 @@ import { useGame } from "@stores/useGame";
 import classNames from "classnames";
 import { FaInfoCircle, FaRegImages } from "react-icons/fa";
 
-const SubjectCard = ({ subject }: { subject: string | null }) => {
+export const SubjectCard = ({ subject }: { subject: string | null }) => {
   return (
     <div
       className={classNames(
@@ -62,7 +62,7 @@ const PlayerArtboard = () => {
           player.leftHanded ? "lg:order-2" : "lg:order-none"
         )}
       >
-        <h3 className="text-3xl tracking-wide font-semibold text-white font-heading ">
+        <h3 className="text-3xl text-center mb-2 mt-1 tracking-wide font-semibold text-white font-heading ">
           {state.name}
         </h3>
 

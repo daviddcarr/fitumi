@@ -1,3 +1,5 @@
+import type { PreviousArt } from "../lib/interfaces/room-state";
+
 export const BASIC_SUBJECTS: string[] = [
   // Animals
   "cat",
@@ -13,6 +15,7 @@ export const BASIC_SUBJECTS: string[] = [
   "frog",
   "elephant",
   "giraffe",
+  "kangaroo",
   "lion",
   "lizard",
   "owl",
@@ -28,7 +31,7 @@ export const BASIC_SUBJECTS: string[] = [
   "viper",
   "zebra",
 
-  // Fods
+  // Foods
   "apple",
   "banana",
   "burger",
@@ -67,6 +70,8 @@ export const BASIC_SUBJECTS: string[] = [
   "hurricane",
   "mountain",
   "palm tree",
+  "river",
+  "snowflake",
   "tornado",
   "tree",
   "waterfall",
@@ -85,6 +90,7 @@ export const BASIC_SUBJECTS: string[] = [
   "skyscraper",
 
   // Space
+  "alien",
   "earth",
   "galaxy",
   "moon",
@@ -95,12 +101,13 @@ export const BASIC_SUBJECTS: string[] = [
   "sun",
 
   // Objects
-  "balloon animal",
+  "balloon",
   "book",
   "camera",
   "clock",
   "chair",
   "computer",
+  "crayon",
   "guitar",
   "hat",
   "key",
@@ -110,6 +117,7 @@ export const BASIC_SUBJECTS: string[] = [
   "pencil",
   "phone",
   "scissors",
+  "sword",
   "television",
   "toothbrush",
   "umbrella",
@@ -118,10 +126,27 @@ export const BASIC_SUBJECTS: string[] = [
   "centaur",
   "cyclops",
   "dragon",
+  "fairy",
   "ghost",
   "gnome",
   "hippogryph",
   "mermaid",
   "unicorn",
   "vampire",
+  "wizard",
 ];
+
+export const getRandomSubject = (previousArt: PreviousArt[]) => {
+  // Unused Subjects
+  let unusedSubjects: string[];
+  if (previousArt.length > 0) {
+    unusedSubjects = BASIC_SUBJECTS.filter(
+      (subject) => !previousArt.some((art) => art.subject === subject)
+    );
+  } else {
+    unusedSubjects = BASIC_SUBJECTS;
+  }
+
+  // Set Subject or Grab Random Subject if no game master
+  return unusedSubjects[Math.floor(Math.random() * unusedSubjects.length)];
+};
