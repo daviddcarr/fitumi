@@ -120,8 +120,8 @@ export default function GameRoom() {
 
                 <div className="max-h-[70vh] overflow-y-scroll">
                   <div className="flex justify-center flex-wrap gap-4">
-                    {[...previousArt, ...previousArt].map((s, i) => {
-                      return <CanvasPreviousArtwork key={i} strokes={s} />;
+                    {previousArt.map((art, i) => {
+                      return <CanvasPreviousArtwork key={i} art={art} />;
                     })}
                   </div>
                 </div>
