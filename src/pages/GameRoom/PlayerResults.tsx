@@ -2,6 +2,7 @@ import { useGame } from "@stores/useGame";
 import CanvasPreviousArtwork from "@components/CanvasPreviousArtwork";
 import { getColor } from "@data/constants";
 import classNames from "classnames";
+import { MdArticle } from "react-icons/md";
 
 export default function PlayerResults() {
   const { players, state, nextRound } = useGame();
@@ -94,8 +95,8 @@ export default function PlayerResults() {
       </button>
 
       <div className="flex justify-center flex-wrap gap-4 mt-8">
-        {previousArt.map((s, i) => {
-          return <CanvasPreviousArtwork key={i} strokes={s} />;
+        {previousArt.map((art, i) => {
+          return <CanvasPreviousArtwork key={i} art={art} />;
         })}
       </div>
     </div>

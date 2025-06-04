@@ -15,10 +15,12 @@ export const BASIC_SUBJECTS: string[] = [
   "giraffe",
   "kangaroo",
   "lion",
+  "lizard",
   "owl",
   "panda",
   "penguin",
   "rabbit",
+  "snail",
   "snake",
   "spider",
   "squirrel",
@@ -75,6 +77,7 @@ export const BASIC_SUBJECTS: string[] = [
 
   // Buildings / Infrastructure
   "big ben",
+  "brick wall",
   "bridge",
   "castle",
   "eiffel tower",

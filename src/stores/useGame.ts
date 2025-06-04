@@ -5,14 +5,15 @@ import type RoomState from "@lib/interfaces/room-state";
 import {
   DEFAULT_ROOM_STATE,
   type Point,
+  type PreviousArt,
   type RoomStatus,
-  type Stroke,
 } from "@lib/interfaces/room-state";
 import { BASIC_SUBJECTS } from "@data/subject-sets";
 import {
   STROKES_PER_PLAYER,
   PLAYER_COLORS,
   type PlayerColor,
+  DEFAULT_VOTING_TIME,
 } from "@data/constants";
 
 interface GameState {
@@ -36,6 +37,7 @@ interface GameActions {
   nextRound: () => Promise<void>;
   setGameMaster: (player: Player | null) => Promise<void>;
   setStrokeCount: (count: number) => Promise<void>;
+  setVotingTime: (time: number) => Promise<void>;
   setReady: (ready: boolean) => Promise<void>;
   startGame: () => Promise<void>;
   submitSubject: (subject: string) => Promise<void>;
@@ -188,6 +190,14 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     set({ state: newState });
   },
 
+  setVotingTime: async (time: number) => {
+    const { state, roomId } = get();
+    if (!roomId || !state) return;
+    const newState: RoomState = { ...state, votingTime: time };
+    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+    set({ state: newState });
+  },
+
   addStroke: async (points: Point[]) => {
     const { roomId, player, players, state } = get();
     if (!roomId || !player || !players || !state) return;
@@ -216,13 +226,15 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const totalNeeded = nonGM.length * (strokesPerPlayer ?? STROKES_PER_PLAYER);
 
     if ((newState.strokes?.length ?? 0) >= totalNeeded) {
-      const previousArt: Stroke[][] = state.previousArt ?? [];
-      previousArt.unshift(newState.strokes);
+      const previousArt: PreviousArt[] = state.previousArt ?? [];
+      previousArt.unshift({ subject: state.currentSubject!, strokes: newState.strokes });
+      const votingTime = newState.votingTime ?? DEFAULT_VOTING_TIME;
+      
       newState = {
         ...newState,
         status: "voting",
         votes: {},
-        votingDeadline: Date.now() + 30000,
+        votingDeadline: Date.now() + (votingTime * 1000),
         previousArt: previousArt,
       };
     }
@@ -260,10 +272,13 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // Pick a fake artist
     const fakeArtist = active[Math.floor(Math.random() * active.length)];
 
+    // Unused Subjects
+    const unusedSubjects = BASIC_SUBJECTS.filter((subject) => !state.previousArt.some((art) => art.subject === subject));
+
     // Set Subject or Grab Random Subject if no game master
     const subject = state.gameMaster
       ? state.currentSubject
-      : BASIC_SUBJECTS[Math.floor(Math.random() * BASIC_SUBJECTS.length)];
+      : unusedSubjects[Math.floor(Math.random() * unusedSubjects.length)];
 
     // Pick first player
     const others = active.filter((p) => p.id !== fakeArtist.id);

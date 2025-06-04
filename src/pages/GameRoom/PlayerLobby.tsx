@@ -16,6 +16,9 @@ import {
   FaInfoCircle,
   FaRegImages,
 } from "react-icons/fa";
+import { MdOutlineTimer } from "react-icons/md";
+import { FaArrowRotateRight } from "react-icons/fa6";
+import { IoMdArrowDropupCircle } from "react-icons/io";
 
 export default function PlayerLobby() {
   const {
@@ -29,6 +32,7 @@ export default function PlayerLobby() {
     setShowInfo,
     setShowGallery,
     setStrokeCount,
+    setVotingTime,
   } = useGame();
   const {
     gameMaster,
@@ -38,20 +42,51 @@ export default function PlayerLobby() {
     strokesPerPlayer,
   } = state;
 
+  const [isFirstPlayer, setIsFirstPlayer] = useState<boolean>(false);
+  const [isGameMaster, setIsGameMaster] = useState<boolean>(false);
+  const [suggestion, setSuggestion] = useState<string|null>(null);
   const [subject, setSubject] = useState<string>(currentSubject || "");
+  const [showSubjectEditor, setShowSubjectEditor] = useState<boolean>(false);
+  const [showAdvancedEditor, setShowAdvancedEditor] = useState<boolean>(false);
 
   useEffect(() => {
     setSubject(currentSubject || "");
   }, [currentSubject]);
 
   useEffect(() => {
+    if (players[0].id === player?.id) {
+      setIsFirstPlayer(true);
+    } else {
+      setIsFirstPlayer(false);
+    }
+
+    if (gameMaster?.id === player?.id) {
+      setIsGameMaster(true);
+    } else {
+      setIsGameMaster(false);
+    }
+  }, [players, player, gameMaster]);
+
+  useEffect(() => {
+    const activePlayers = players.filter((p) => p.id !== gameMaster?.id);
+    const readyPlayers = players.filter((p) => readiness[p.id]);
+    if (activePlayers.length < 3) {
+      setSuggestion(`Invite ${3 - activePlayers.length} More Players`);
+    } else if (readyPlayers.length < players.length) {
+      setSuggestion(`${readyPlayers.length}/${players.length} Ready`);
+    } else if (gameMaster &&!currentSubject) {
+      setSuggestion("Set a Subject");
+    } else {
+      setSuggestion(null);
+    }
+
     if (!gameMaster) {
       const allReady = players.every((p) => readiness[p.id]);
       if (allReady) {
         startGame();
       }
     }
-  }, [gameMaster, readiness, players, startGame]);
+  }, [gameMaster, readiness, players, startGame, currentSubject]);
 
   if (!player) return null;
 
@@ -60,7 +95,7 @@ export default function PlayerLobby() {
       <CanvasBackground />
 
       <div className="z-10 w-full h-full sm:flex justify-center items-center p-2 overflow-scroll">
-        <div className="p-4 bg-blurred z-10 max-w-sm mx-auto space-y-4 w-full">
+        <div className="p-4 bg-blurred z-10 max-w-sm max-h-[80vh] overflow-scroll mx-auto space-y-4 w-full">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl tracking-wider font-semibold font-heading text-purple-800 leading-none ">
               {state.name}
@@ -76,7 +111,18 @@ export default function PlayerLobby() {
             </div>
           </div>
 
+
+          {/* Player List */}
           <PlayerList canEdit={!!gameMaster} isLobby />
+
+          {/* Suggestion */}
+          {
+            suggestion && (
+              <div className="text-center">
+                <p className="text-sm text-purple-500">{ suggestion }</p>
+              </div>
+            )
+          }
 
           {/* Ready Button */}
           <div className="flex flex-col sm:flex-row gap-2 items-stretch w-full">
@@ -128,57 +174,94 @@ export default function PlayerLobby() {
           </div>
 
           {/* Subject Entry for Game Master */}
-          {gameMaster?.id === player?.id && (
+          {isGameMaster && (
             <>
-              <div className="">
-                <h2 className="text-2xl font-heading text-purple-800">
-                  Subject
-                </h2>
-                <p className="text-slate-800">
-                  As the Game Master you can submit a word (noun) for your
-                  artists to draw.
-                </p>
-              </div>
+              {
+                showSubjectEditor ? (
+                  <div className="flex flex-col gap-2">
 
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="border rounded-lg border-purple-300 flex items-center grow">
-                  <input
-                    type="text"
-                    placeholder="Subject"
-                    className={`${
-                      subject === currentSubject
-                        ? "text-green-600"
-                        : "text-purple-900"
-                    } grow p-2 placeholder:text-gray-400 focus:outline-purple-900 capitalize`}
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                  />
-                  <button
-                    className=" text-purple-800 hover:text-purple-400 cursor-pointer py-2 px-4"
-                    onClick={() =>
-                      submitSubject(
-                        BASIC_SUBJECTS[
-                          Math.floor(Math.random() * BASIC_SUBJECTS.length)
-                        ]
-                      )
-                    }
-                  >
-                    <FaDiceD20 />
-                  </button>
-                </div>
-                <button
-                  className={`${
-                    subject === currentSubject
-                      ? "bg-green-600 hover:bg-green-900"
-                      : "bg-purple-600 hover:bg-purple-800"
-                  } text-white py-2 px-4 flex items-center justify-center rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
-                  onClick={() => submitSubject(subject)}
-                  disabled={!subject.trim()}
-                >
-                  {subject === currentSubject ? <FaEdit /> : <FaRegEdit />}
-                  <span className="ml-2 sm:hidden">Submit</span>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-heading text-purple-800">
+                          Subject
+                        </h2>
+
+                        <button
+                            onClick={() => setShowSubjectEditor(false)}
+                            className="cursor-pointer p-1 rounded-full hover:text-purple-600 text-purpele-950"
+                          >
+                            <IoMdArrowDropupCircle className="text-2xl" />
+                          </button>
+                      </div>
+                      <p className="text-slate-800">
+                        As the Game Master you can submit a word (noun) for your
+                        artists to draw.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="border rounded-lg border-purple-300 flex items-center grow">
+                        <input
+                          type="text"
+                          placeholder="Subject"
+                          className={`${
+                            subject === currentSubject
+                              ? "text-green-600"
+                              : "text-purple-900"
+                          } grow p-2 placeholder:text-gray-400 focus:outline-purple-900 capitalize`}
+                          value={subject}
+                          onChange={(e) => setSubject(e.target.value)}
+                        />
+
+                      </div>
+                      <button
+                        className={`${
+                          subject === currentSubject
+                            ? "bg-green-600 hover:bg-green-900"
+                            : "bg-purple-600 hover:bg-purple-800"
+                        } text-white py-2 px-4 flex items-center justify-center rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-auto`}
+                        onClick={() => {
+                          submitSubject(subject)
+                          setShowSubjectEditor(false)
+                        }}
+                        disabled={!subject.trim()}
+                      >
+                        {subject === currentSubject ? <FaEdit /> : <FaRegEdit />}
+                        <span className="ml-2 sm:hidden">Submit</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button 
+                    className="flex items-center gap-2 p-2 w-full border-2 border-purple-300 bg-purple-300/20 rounded-4xl"
+                    >
+                    <button 
+                      className="pl-2 text-slate-800 flex gap-2 items-center text-left grow capitalize cursor-pointer"
+                      onClick={() => setShowSubjectEditor(true)}
+                      >
+                      <span className="text-2xl font-heading text-purple-800">
+                        Subject:
+                      </span>
+                      {currentSubject ?? "???"}
+                    </button>
+                    <button
+                          className=" text-purple-800 hover:text-purple-400 cursor-pointer py-2 px-4"
+                          onClick={() => {    
+                              submitSubject(
+                                BASIC_SUBJECTS[
+                                  Math.floor(Math.random() * BASIC_SUBJECTS.length)
+                                ]
+                              )
+                          }}
+                        >
+                          <FaDiceD20 />
+                        </button>
                 </button>
-              </div>
+                )
+              }
+
+
+
 
               <button
                 disabled={
@@ -194,24 +277,77 @@ export default function PlayerLobby() {
             </>
           )}
 
-          <div className="flex border-[1px] border-purple-300 rounded-lg">
-            <span className="p-2 grow">Stroke Count:</span>
-            {[1, 2, 3, 4].map((c) => (
-              <button
-                key={c}
-                disabled={strokesPerPlayer === c}
-                className={classNames(
-                  "py-2 px-4 border-l-[1px] border-purple-300",
-                  c === strokesPerPlayer
-                    ? "bg-purple-300"
-                    : "bg-transparent cursor-pointer hover:bg-purple-100"
-                )}
-                onClick={() => setStrokeCount(c)}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+          {
+            (isGameMaster || isFirstPlayer) && (
+              <>
+                <button 
+                  className="flex w-full border-[1px] p-1 px-2 gap-4 cursor-pointer items-center justify-between border-purple-300 rounded-full"
+                  onClick={() => setShowAdvancedEditor(!showAdvancedEditor)}
+                  >
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <FaArrowRotateRight /> {strokesPerPlayer}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MdOutlineTimer /> {state.votingTime}s
+                    </div>
+                  </div>
+
+                  <FaEdit />
+                </button>
+                {
+                  showAdvancedEditor && (
+                    <>
+                      {/* Stroke Count */}
+                      <div className="flex border-[1px] border-purple-300 rounded-lg">
+                        <span className="p-2 grow">Stroke Count:</span>
+                        {[1, 2, 3, 4].map((c) => (
+                          <button
+                            key={c}
+                            disabled={strokesPerPlayer === c}
+                            className={classNames(
+                              "py-2 px-4 border-l-[1px] border-purple-300",
+                              c === strokesPerPlayer
+                                ? "bg-purple-300"
+                                : "bg-transparent cursor-pointer hover:bg-purple-100"
+                            )}
+                            onClick={() => setStrokeCount(c)}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Voting Time */}
+                      <div className="flex border-[1px] border-purple-300 rounded-lg">
+
+                        <span className="p-2 grow">Voting Time:</span>
+                        {[5, 10, 15].map((c) => (
+                          <button
+                            key={c}
+                            disabled={state.votingTime === c}
+                            className={classNames(
+                              "py-2 px-4 border-l-[1px] border-purple-300",
+                              c === state.votingTime
+                                ? "bg-purple-300"
+                                : "bg-transparent cursor-pointer hover:bg-purple-100"
+                            )}
+                            onClick={() => setVotingTime(c)}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )
+                }
+
+
+              </>
+            ) 
+          }
+
+
         </div>
       </div>
     </div>
