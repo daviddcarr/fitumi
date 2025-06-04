@@ -41,7 +41,7 @@ export default function Home() {
                 className="text-input"
                 placeholder="Room Name"
                 value={name}
-                onChange={(e) => setName(e.target.value.substring(0, 14))}
+                onChange={(e) => setName(e.target.value.substring(0, 10))}
               />
               <button
                 className="purple-button w-full"

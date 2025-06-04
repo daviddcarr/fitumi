@@ -1,12 +1,12 @@
 import { getColor } from "@data/constants";
-import type { PreviousArt, Stroke } from "@lib/interfaces/room-state";
+import type { PreviousArt } from "@lib/interfaces/room-state";
 import { useGame } from "@stores/useGame";
 import classNames from "classnames";
 import { useRef, useEffect, useState } from "react";
 import { FaFileDownload, FaTimes } from "react-icons/fa";
 
 interface CanvasPreviousArtworkProps {
-  art: PreviousArt
+  art: PreviousArt;
 }
 
 const BASE_SIZE = 200;
@@ -129,7 +129,7 @@ const CanvasPreviousArtwork = ({ art }: CanvasPreviousArtworkProps) => {
 
       <div className="absolute inset-0 flex flex-col gap-2 items-center justify-center opacity-0 pointer-events-none group-hover:opacity-100 backdrop-blur-[2px]">
         <FaFileDownload className="text-4xl" />
-        <span className="capitalize">{ subject }</span>
+        <span className="capitalize">{subject}</span>
       </div>
 
       <div
@@ -145,7 +145,10 @@ const CanvasPreviousArtwork = ({ art }: CanvasPreviousArtworkProps) => {
               key={size.name}
               className="bg-white hover:bg-purple-800 hover:text-white flex gap-1 items-center justify-center rounded-full p-2 cursor-pointer"
               onClick={() =>
-                downloadAtSize(size.size, `fitumi-${state.name}-${subject}-${size.abbr}.png`)
+                downloadAtSize(
+                  size.size,
+                  `fitumi-${state.name}-${subject}-${size.abbr}.png`
+                )
               }
             >
               <FaFileDownload />

@@ -56,7 +56,6 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    
     // Draw Saved Strokes
     strokes.forEach((stroke) => {
       const hex = getColor(stroke.color).hex;
@@ -191,7 +190,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
       <div className="w-full h-full pointer-events-none absolute inset-0">
         {currentPlayer?.id !== player?.id && !readOnly && (
-          <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
+          <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-max">
             <h2 className="font-heading text-purple-800 text-2xl">
               <span
                 className={classNames(

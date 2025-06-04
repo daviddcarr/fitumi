@@ -2,7 +2,6 @@ import { useGame } from "@stores/useGame";
 import CanvasPreviousArtwork from "@components/CanvasPreviousArtwork";
 import { getColor } from "@data/constants";
 import classNames from "classnames";
-import { MdArticle } from "react-icons/md";
 
 export default function PlayerResults() {
   const { players, state, nextRound } = useGame();
@@ -53,7 +52,7 @@ export default function PlayerResults() {
             return (
               <li
                 key={pid}
-                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-lg mb-1"
+                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-full mb-1"
               >
                 <span className="font-medium">{p?.name}</span>
                 <span className="text-purple-400">
@@ -76,7 +75,7 @@ export default function PlayerResults() {
             return (
               <li
                 key={p.id}
-                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-lg mb-1"
+                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-full mb-1"
               >
                 <span>{p.name}</span>
                 <span className="font-semibold">{sc}</span>
@@ -88,7 +87,7 @@ export default function PlayerResults() {
 
       {/* 3) “Play Again” button: */}
       <button
-        className="mt-4 px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
+        className="mt-4 px-6 py-3 bg-purple-600 text-white font-semibold rounded-full hover:bg-yellow-600 transition"
         onClick={() => nextRound()}
       >
         Play Again
