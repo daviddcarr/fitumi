@@ -1,7 +1,7 @@
 import ButtonCopyUrl from "@components/ButtonCopyUrl";
 import CanvasBackground from "@components/CanvasBackground";
 import PlayerList from "@components/PlayerList";
-import { BASIC_SUBJECTS } from "@data/subject-sets";
+import { getRandomSubject } from "@data/subject-sets";
 import { useGame } from "@stores/useGame";
 import classNames from "classnames";
 import { useEffect, useState } from "react";
@@ -201,11 +201,7 @@ export default function PlayerLobby() {
                   <button
                     className=" text-purple-800 hover:text-purple-400 cursor-pointer py-2 px-4"
                     onClick={() => {
-                      submitSubject(
-                        BASIC_SUBJECTS[
-                          Math.floor(Math.random() * BASIC_SUBJECTS.length)
-                        ]
-                      );
+                      submitSubject(getRandomSubject(previousArt));
                     }}
                   >
                     <FaDiceD20 />

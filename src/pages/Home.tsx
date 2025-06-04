@@ -46,7 +46,7 @@ export default function Home() {
               <button
                 className="purple-button w-full"
                 onClick={initRoom}
-                disabled={!name && name.length <= 4}
+                disabled={!name || name.length <= 4}
               >
                 Create Room
               </button>

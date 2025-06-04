@@ -1,4 +1,7 @@
-import { DEFAULT_VOTING_TIME, STROKES_PER_PLAYER } from "@data/constants";
+import {
+  DEFAULT_VOTING_TIME,
+  DEFAULT_STROKES_PER_PLAYER,
+} from "@data/constants";
 import type { Player } from "./player";
 
 export type Point = { x: number; y: number };
@@ -17,7 +20,7 @@ export default interface RoomState {
   currentPlayer?: Player;
   fakeArtist?: Player;
   strokesPerPlayer: number;
-  votes: Record< string, string>;
+  votes: Record<string, string>;
   votingTime: number;
   votingDeadline: number | null;
   scores: Record<string, number>;
@@ -37,12 +40,12 @@ export const DEFAULT_ROOM_STATE: RoomState = {
   readiness: {},
   strokes: [],
   currentSubject: null,
-  strokesPerPlayer: STROKES_PER_PLAYER,
+  strokesPerPlayer: DEFAULT_STROKES_PER_PLAYER,
   votes: {},
   votingTime: DEFAULT_VOTING_TIME,
   votingDeadline: null,
   scores: {},
 
   results: undefined,
-  previousArt: []
+  previousArt: [],
 };

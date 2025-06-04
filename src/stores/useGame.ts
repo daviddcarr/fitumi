@@ -8,9 +8,9 @@ import {
   type PreviousArt,
   type RoomStatus,
 } from "@lib/interfaces/room-state";
-import { BASIC_SUBJECTS } from "@data/subject-sets";
+import { getRandomSubject } from "@data/subject-sets";
 import {
-  STROKES_PER_PLAYER,
+  DEFAULT_STROKES_PER_PLAYER,
   PLAYER_COLORS,
   type PlayerColor,
   DEFAULT_VOTING_TIME,
@@ -223,18 +223,22 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     };
 
     const { strokesPerPlayer } = state;
-    const totalNeeded = nonGM.length * (strokesPerPlayer ?? STROKES_PER_PLAYER);
+    const totalNeeded =
+      nonGM.length * (strokesPerPlayer ?? DEFAULT_STROKES_PER_PLAYER);
 
     if ((newState.strokes?.length ?? 0) >= totalNeeded) {
       const previousArt: PreviousArt[] = state.previousArt ?? [];
-      previousArt.unshift({ subject: state.currentSubject!, strokes: newState.strokes });
+      previousArt.unshift({
+        subject: state.currentSubject!,
+        strokes: newState.strokes,
+      });
       const votingTime = newState.votingTime ?? DEFAULT_VOTING_TIME;
-      
+
       newState = {
         ...newState,
         status: "voting",
         votes: {},
-        votingDeadline: Date.now() + (votingTime * 1000),
+        votingDeadline: Date.now() + votingTime * 1000,
         previousArt: previousArt,
       };
     }
@@ -272,13 +276,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // Pick a fake artist
     const fakeArtist = active[Math.floor(Math.random() * active.length)];
 
-    // Unused Subjects
-    const unusedSubjects = BASIC_SUBJECTS.filter((subject) => !state.previousArt.some((art) => art.subject === subject));
-
     // Set Subject or Grab Random Subject if no game master
     const subject = state.gameMaster
       ? state.currentSubject
-      : unusedSubjects[Math.floor(Math.random() * unusedSubjects.length)];
+      : getRandomSubject(state.previousArt);
 
     // Pick first player
     const others = active.filter((p) => p.id !== fakeArtist.id);
