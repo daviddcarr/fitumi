@@ -13,6 +13,7 @@ export const BASIC_SUBJECTS: string[] = [
   "frog",
   "elephant",
   "giraffe",
+  "kangaroo",
   "lion",
   "owl",
   "panda",
@@ -26,7 +27,7 @@ export const BASIC_SUBJECTS: string[] = [
   "viper",
   "zebra",
 
-  // Fods
+  // Foods
   "apple",
   "banana",
   "burger",
@@ -65,6 +66,8 @@ export const BASIC_SUBJECTS: string[] = [
   "hurricane",
   "mountain",
   "palm tree",
+  "river",
+  "snowflake",
   "tornado",
   "tree",
   "waterfall",
@@ -82,6 +85,7 @@ export const BASIC_SUBJECTS: string[] = [
   "skyscraper",
 
   // Space
+  "alien",
   "earth",
   "galaxy",
   "moon",
@@ -92,12 +96,13 @@ export const BASIC_SUBJECTS: string[] = [
   "sun",
 
   // Objects
-  "balloon animal",
+  "balloon",
   "book",
   "camera",
   "clock",
   "chair",
   "computer",
+  "crayon",
   "guitar",
   "hat",
   "key",
@@ -107,6 +112,7 @@ export const BASIC_SUBJECTS: string[] = [
   "pencil",
   "phone",
   "scissors",
+  "sword",
   "television",
   "toothbrush",
   "umbrella",
@@ -115,10 +121,12 @@ export const BASIC_SUBJECTS: string[] = [
   "centaur",
   "cyclops",
   "dragon",
+  "fairy",
   "ghost",
   "gnome",
   "hippogryph",
   "mermaid",
   "unicorn",
   "vampire",
+  "wizard",
 ];

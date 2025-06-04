@@ -45,12 +45,12 @@ export default function PlayerJoin() {
           </button>
 
           <button
-            className="grid grid-cols-2 w-full border-2 border-purple-300 rounded-xl overflow-hidden"
+            className="grid grid-cols-2 w-full border-2 border-purple-300 rounded-full overflow-hidden"
             onClick={() => setLeftHanded(!leftHanded)}
           >
             <div
               className={classNames(
-                "px-4 py-1 flex items-center justify-center rounded-lg text-purple-300",
+                "px-4 py-1 flex items-center justify-center rounded-full text-purple-300",
                 leftHanded && "bg-purple-300 text-white"
               )}
             >
@@ -58,7 +58,7 @@ export default function PlayerJoin() {
             </div>
             <div
               className={classNames(
-                "px-4 py-1 flex items-center justify-center rounded-lg text-purple-300",
+                "px-4 py-1 flex items-center justify-center rounded-full text-purple-300",
                 !leftHanded && "bg-purple-300 text-white"
               )}
             >
