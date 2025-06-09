@@ -4,9 +4,14 @@ import PlayerListItem from "./Item";
 interface PlayerListProps {
   canEdit?: boolean;
   isLobby?: boolean;
+  hint?: string;
 }
 
-const PlayerList = ({ canEdit = false, isLobby = false }: PlayerListProps) => {
+const PlayerList = ({
+  canEdit = false,
+  isLobby = false,
+  hint,
+}: PlayerListProps) => {
   const { player, players } = useGame();
 
   if (!player) return null;
@@ -27,6 +32,11 @@ const PlayerList = ({ canEdit = false, isLobby = false }: PlayerListProps) => {
                 />
               );
             })}
+          {hint && (
+            <p className="text-center text-sm max-w-64 mx-auto text-purple-900">
+              {hint}
+            </p>
+          )}
 
           {players.length === 0 && (
             <p className="text-center text-sm max-w-64 mx-auto text-purple-900">
