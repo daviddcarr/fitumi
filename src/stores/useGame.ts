@@ -12,7 +12,6 @@ import {
 import { getRandomSubject } from "@data/subject-sets";
 import {
   DEFAULT_STROKES_PER_PLAYER,
-  PLAYER_COLORS,
   type PlayerColor,
   DEFAULT_VOTING_TIME,
   getAvailableColors,
@@ -34,7 +33,11 @@ interface GameActions {
   createRoom: (name: string) => Promise<string | null>;
   finalizeVoting: () => Promise<void>;
   initRoom: (code: string) => Promise<void>;
-  join: (name: string, leftHanded?: boolean) => Promise<Player | null>;
+  join: (
+    name: string,
+    leftHanded?: boolean,
+    asObserver?: boolean
+  ) => Promise<Player | null>;
   loadPlayer: (roomId: string, playerSlug: string) => Promise<void>;
   nextRound: () => Promise<void>;
   setGameMaster: (player: Player | null) => Promise<void>;
@@ -123,16 +126,22 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
    * @param name the name for the player
    * @returns the newly created player
    */
-  join: async (name: string, leftHanded?: boolean) => {
+  join: async (name: string, leftHanded?: boolean, asObserver?: boolean) => {
     leftHanded = leftHanded || false;
     // Make sure we have a room to join
-    const { roomId, players } = get();
+    const { roomId, players, state } = get();
     if (!roomId) return;
 
     // Set up Player Data
+    let isObserver = asObserver || state.status !== "lobby";
     const availableColors: PlayerColor[] = getAvailableColors(players);
+    let color: string = "";
+    if (availableColors.length === 0) {
+      isObserver = true;
+    } else {
+      color = availableColors[players.length % availableColors.length].name;
+    }
 
-    const color = availableColors[players.length % PLAYER_COLORS.length].name;
     const base = name.toLowerCase().replace(/\s+/g, "-");
     const suffix = Math.random().toString(36).substring(2, 5);
     const slug = `${base}-${suffix}`;
@@ -140,7 +149,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // Create Player
     const { data, error } = await supabase
       .from("players")
-      .insert([{ room_id: roomId, name, color, slug, leftHanded }])
+      .insert([{ room_id: roomId, name, color, slug, leftHanded, isObserver }])
       .select()
       .single();
     if (error || !data) {
@@ -207,14 +216,16 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const newStroke: Stroke = { playerId: player.id, points, color: color };
 
     // Get Next Active Player in Turn Order
-    let nonGM: Player[];
+    let activePlayers: Player[];
     if (state.gameMaster) {
-      nonGM = players.filter((p) => p.id !== state.gameMaster!.id);
+      activePlayers = players.filter(
+        (p) => p.id !== state.gameMaster!.id && !p.isObserver
+      );
     } else {
-      nonGM = players.slice();
+      activePlayers = players.filter((p) => !p.isObserver);
     }
-    const idx = nonGM.findIndex((p) => p.id === player.id);
-    const nextPlayer = nonGM[(idx + 1) % nonGM.length];
+    const idx = activePlayers.findIndex((p) => p.id === player.id);
+    const nextPlayer = activePlayers[(idx + 1) % activePlayers.length];
 
     let newState: RoomState = {
       ...state,
@@ -224,7 +235,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const { strokesPerPlayer } = state;
     const totalNeeded =
-      nonGM.length * (strokesPerPlayer ?? DEFAULT_STROKES_PER_PLAYER);
+      activePlayers.length * (strokesPerPlayer ?? DEFAULT_STROKES_PER_PLAYER);
 
     if ((newState.strokes?.length ?? 0) >= totalNeeded) {
       const previousArt: PreviousArt[] = state.previousArt ?? [];
@@ -263,9 +274,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // Make sure we have enough active players
     let active: Player[];
     if (state.gameMaster) {
-      active = players.filter((p) => p.id !== state.gameMaster!.id);
+      active = players.filter(
+        (p) => p.id !== state.gameMaster!.id && !p.isObserver
+      );
     } else {
-      active = players.slice();
+      active = players.filter((p) => !p.isObserver);
     }
     if (active.length < 3) return;
 
@@ -383,7 +396,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       }
     } else {
       winners = players
-        .filter((p) => p.id !== fakeId && p.id !== state.gameMaster?.id)
+        .filter(
+          (p) =>
+            p.id !== fakeId && p.id !== state.gameMaster?.id && !p.isObserver
+        )
         .map((p) => p.id);
     }
 

@@ -58,7 +58,7 @@ const PlayerArtboard = () => {
 
       <div
         className={classNames(
-          "p-2 px-4 min-w-[200px] bg-purple-950 space-y-4",
+          "p-2 px-4 min-w-[250px] bg-purple-950 space-y-4",
           player.leftHanded ? "lg:order-2" : "lg:order-none"
         )}
       >
@@ -69,7 +69,11 @@ const PlayerArtboard = () => {
         <div className="@container/player-info">
           <div className="flex flex-col @md/player-info:grid @md/player-info:grid-cols-[auto_1fr] gap-2">
             <SubjectCard
-              subject={fakeArtist?.id !== player.id ? currentSubject : null}
+              subject={
+                !player.isObserver && fakeArtist?.id !== player.id
+                  ? currentSubject
+                  : null
+              }
             />
 
             <PlayerList canEdit={false} isLobby={false} />

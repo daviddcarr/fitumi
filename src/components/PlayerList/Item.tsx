@@ -35,20 +35,28 @@ const PlayerListItem = ({
         key={p.id}
         className={classNames(
           "space-y-2 p-1 rounded-3xl border-2",
-          playerColor?.border,
+          !p.isObserver ? playerColor?.border : "border-slate-500 order-2",
           !isLobby && currentPlayer?.id === p.id
             ? `${playerColor.bg} ${playerColor.text}`
-            : "bg-purple-900 text-white"
+            : !p.isObserver
+            ? "bg-purple-900 text-white"
+            : "bg-slate-700 text-white"
         )}
       >
         <div className="flex items-center gap-2 w-full">
           {p.id === player?.id && isLobby ? (
             <button
               className="w-9 h-9 group rounded-full cursor-pointer flex items-center justify-center"
-              style={{ backgroundColor: playerColor?.hex }}
+              style={{
+                backgroundColor: !p.isObserver ? playerColor?.hex : "#6a7282",
+              }}
               onClick={() => setShowColorPicker(!showColorPicker)}
             >
-              <IoIosColorPalette className="hidden group-hover:block text-white text-2xl" />
+              {!p.isObserver ? (
+                <IoIosColorPalette className="hidden group-hover:block text-white text-2xl" />
+              ) : (
+                <FaEye className="text-white" />
+              )}
             </button>
           ) : (
             <div
@@ -56,17 +64,20 @@ const PlayerListItem = ({
                 "w-9 h-9 rounded-full flex items-center justify-center",
                 p.isObserver ? "bg-slate-600" : ""
               )}
-              style={{ backgroundColor: !p.isObserver ? playerColor.hex : undefined }}
+              style={{
+                backgroundColor: !p.isObserver ? playerColor.hex : undefined,
+              }}
             >
-              {
-              p.isObserver ? (
+              {p.isObserver ? (
                 <FaEye className="text-white" />
-              )  : (!isLobby && currentPlayer?.id === p.id && (
-                <FaPaintbrush
-                  className={classNames("text-2xl", playerColor?.text)}
-                />
-              )
-             )}
+              ) : (
+                !isLobby &&
+                currentPlayer?.id === p.id && (
+                  <FaPaintbrush
+                    className={classNames("text-2xl", playerColor?.text)}
+                  />
+                )
+              )}
             </div>
           )}
           <span className=" font-heading text-xl tracking-widest mr-2">
@@ -121,10 +132,13 @@ const PlayerListItem = ({
               })}
 
               <button
-                className="min-w-9 w-full border-4 h-9 rounded-3xl flex items-center justify-center disabled:opacity-50 cursor-pointer disabled:cursor-auto"
-                onClick={() => updatePlayer({ ...p, isObserver: true, color: "" })}
+                className="min-w-9 w-full border-4 col-span-4 border-slate-500 hover:border-gray-700 h-9 rounded-3xl flex items-center gap-2 justify-center bg-slate-500 disabled:opacity-50 cursor-pointer disabled:cursor-auto"
+                onClick={() => {
+                  updatePlayer({ ...p, isObserver: true, color: "" });
+                  setShowColorPicker(false);
+                }}
               >
-                <FaEye />
+                <FaEye /> Observer
               </button>
             </div>
           </div>
