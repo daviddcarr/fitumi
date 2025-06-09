@@ -3,7 +3,7 @@ import type { Player } from "@lib/interfaces/player";
 import { useGame } from "@stores/useGame";
 import classNames from "classnames";
 import { useState } from "react";
-import { FaCrown, FaRegCheckCircle } from "react-icons/fa";
+import { FaCrown, FaRegCheckCircle, FaEye } from "react-icons/fa";
 import { FaPaintbrush } from "react-icons/fa6";
 import { IoIosColorPalette } from "react-icons/io";
 
@@ -23,7 +23,7 @@ const PlayerListItem = ({
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const handleColorChange = (color: string) => {
-    updatePlayer({ ...p, color });
+    updatePlayer({ ...p, isObserver: false, color });
     setShowColorPicker(false);
   };
 
@@ -52,14 +52,21 @@ const PlayerListItem = ({
             </button>
           ) : (
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: playerColor.hex }}
+              className={classNames(
+                "w-9 h-9 rounded-full flex items-center justify-center",
+                p.isObserver ? "bg-slate-600" : ""
+              )}
+              style={{ backgroundColor: !p.isObserver ? playerColor.hex : undefined }}
             >
-              {!isLobby && currentPlayer?.id === p.id && (
+              {
+              p.isObserver ? (
+                <FaEye className="text-white" />
+              )  : (!isLobby && currentPlayer?.id === p.id && (
                 <FaPaintbrush
                   className={classNames("text-2xl", playerColor?.text)}
                 />
-              )}
+              )
+             )}
             </div>
           )}
           <span className=" font-heading text-xl tracking-widest mr-2">
@@ -112,6 +119,13 @@ const PlayerListItem = ({
                   </button>
                 );
               })}
+
+              <button
+                className="min-w-9 w-full border-4 h-9 rounded-3xl flex items-center justify-center disabled:opacity-50 cursor-pointer disabled:cursor-auto"
+                onClick={() => updatePlayer({ ...p, isObserver: true, color: "" })}
+              >
+                <FaEye />
+              </button>
             </div>
           </div>
         )}

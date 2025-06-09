@@ -15,6 +15,7 @@ import {
   PLAYER_COLORS,
   type PlayerColor,
   DEFAULT_VOTING_TIME,
+  getAvailableColors,
 } from "@data/constants";
 
 interface GameState {
@@ -129,9 +130,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (!roomId) return;
 
     // Set up Player Data
-    const availableColors: PlayerColor[] = PLAYER_COLORS.filter(
-      (color) => !players.some((player) => player.color === color.name)
-    );
+    const availableColors: PlayerColor[] = getAvailableColors(players);
 
     const color = availableColors[players.length % PLAYER_COLORS.length].name;
     const base = name.toLowerCase().replace(/\s+/g, "-");

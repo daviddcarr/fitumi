@@ -1,3 +1,5 @@
+import type { Player } from "@lib/interfaces/player";
+
 export const DEFAULT_STROKES_PER_PLAYER = 2;
 export const DEFAULT_VOTING_TIME = 15;
 
@@ -137,3 +139,9 @@ export const PLAYER_COLORS: PlayerColor[] = [
 export const getColor = (name: string): PlayerColor => {
   return PLAYER_COLORS.find((c) => c.name === name) as PlayerColor;
 };
+
+export const getAvailableColors = (players: Player[]): PlayerColor[] => {
+  return PLAYER_COLORS.filter(
+    (color) => !players.some((player) => player.color === color.name)
+  );
+}
