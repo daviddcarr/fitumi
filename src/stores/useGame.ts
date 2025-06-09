@@ -7,6 +7,7 @@ import {
   type Point,
   type PreviousArt,
   type RoomStatus,
+  type Stroke,
 } from "@lib/interfaces/room-state";
 import { getRandomSubject } from "@data/subject-sets";
 import {
@@ -200,11 +201,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   addStroke: async (points: Point[]) => {
     const { roomId, player, players, state } = get();
-    if (!roomId || !player || !players || !state) return;
+    if (!roomId || !player || !players || !state || player.isObserver) return;
 
     // Build Stroke Data
-    const color = players.find((p) => p.id === player.id)!.color;
-    const newStroke = { playerId: player.id, points, color };
+    const color = player.color;
+    const newStroke: Stroke = { playerId: player.id, points, color: color };
 
     // Get Next Active Player in Turn Order
     let nonGM: Player[];
@@ -216,7 +217,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const idx = nonGM.findIndex((p) => p.id === player.id);
     const nextPlayer = nonGM[(idx + 1) % nonGM.length];
 
-    let newState = {
+    let newState: RoomState = {
       ...state,
       strokes: [...(state.strokes ?? []), newStroke],
       currentPlayer: nextPlayer,
