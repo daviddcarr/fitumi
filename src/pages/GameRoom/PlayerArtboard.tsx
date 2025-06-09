@@ -1,8 +1,11 @@
+import ButtonCopyUrl from "@components/Buttons/ButtonCopyUrl";
+import ButtonGallery from "@components/Buttons/ButtonGallery";
+import ButtonInfo from "@components/Buttons/ButtonInfo";
+import ButtonRefresh from "@components/Buttons/ButtonRefresh";
 import CanvasBoard from "@components/CanvasBoard";
 import PlayerList from "@components/PlayerList";
 import { useGame } from "@stores/useGame";
 import classNames from "classnames";
-import { FaInfoCircle, FaRegImages } from "react-icons/fa";
 
 export const SubjectCard = ({ subject }: { subject: string | null }) => {
   return (
@@ -38,8 +41,8 @@ export const SubjectCard = ({ subject }: { subject: string | null }) => {
 };
 
 const PlayerArtboard = () => {
-  const { player, players, state, setShowInfo, setShowGallery } = useGame();
-  const { currentSubject, fakeArtist, previousArt } = state;
+  const { player, players, state } = useGame();
+  const { currentSubject, fakeArtist } = state;
 
   if (!player) return null;
 
@@ -81,20 +84,10 @@ const PlayerArtboard = () => {
         </div>
 
         <div className="flex items-center justify-center gap-2">
-          <button
-            className="p-2 text-white hover:text-purple-200"
-            onClick={() => setShowInfo(true)}
-          >
-            <FaInfoCircle className="text-2xl" />
-          </button>
-          {previousArt.length > 0 && (
-            <button
-              className="p-2 text-white hover:text-purple-200"
-              onClick={() => setShowGallery(true)}
-            >
-              <FaRegImages className="text-2xl" />
-            </button>
-          )}
+          <ButtonCopyUrl isLight hideLabel />
+          <ButtonInfo isLight />
+          <ButtonGallery isLight />
+          <ButtonRefresh isLight />
         </div>
       </div>
     </div>

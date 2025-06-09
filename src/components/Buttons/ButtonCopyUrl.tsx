@@ -3,7 +3,17 @@ import { useEffect, useState } from "react";
 import { FaCopy } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 
-const ButtonCopyUrl = () => {
+interface ButtonCopyUrlProps {
+  isLight?: boolean;
+  hideLabel?: boolean;
+  className?: string;
+}
+
+const ButtonCopyUrl = ({
+  isLight = false,
+  hideLabel = false,
+  className,
+}: ButtonCopyUrlProps) => {
   const { roomCode } = useParams();
   const [isCopied, setIsCopied] = useState(false);
 
@@ -19,8 +29,13 @@ const ButtonCopyUrl = () => {
   return (
     <button
       className={classNames(
-        "text-xl font-semibold flex gap-2 items-center cursor-pointer relative",
-        isCopied ? "text-green-500" : "text-purple-900 hover:text-purple-700"
+        className,
+        "text-xl font-semibold flex gap-2 items-center cursor-pointer relative p-1",
+        isCopied
+          ? "text-green-500"
+          : isLight
+          ? "text-white hover:text-purple-200"
+          : "text-purple-900 hover:text-purple-700"
       )}
       onClick={() =>
         navigator.clipboard
@@ -28,13 +43,15 @@ const ButtonCopyUrl = () => {
           .then(() => setIsCopied(true))
       }
     >
-      <FaCopy /> <span className="hidden sm:inline">{roomCode}</span>
+      <FaCopy />
+      {hideLabel ? null : <span className="hidden sm:inline">{roomCode}</span>}
       <div
         className={classNames(
-          "absolute top-[90%] left-1/2 transform -translate-x-1/2",
-          "text-xs font-normal text-purple-900",
+          "absolute top-[95%] left-1/2 transform -translate-x-1/2",
+          "text-xs font-normal",
           "transition-opacity duration-300 ease-in-out",
           "pointer-events-none",
+          isLight ? "text-white" : "text-purple-900",
           isCopied ? "opacity-100" : "opacity-0"
         )}
       >

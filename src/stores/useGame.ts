@@ -174,14 +174,21 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   leave: async () => {
     const { roomId, player } = get();
+    const playerId = player?.id;
     if (!roomId || !player) return;
     const { error } = await supabase
       .from("players")
       .delete()
-      .eq("id", player.id);
+      .eq("id", playerId);
     if (error) return;
+    const { state } = get();
+    if (state.gameMaster?.id === playerId) {
+      const newState = { ...state, gameMaster: undefined };
+      await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+      set({ state: { ...state, gameMaster: undefined } });
+    }
     set((state) => ({
-      players: state.players.filter((p) => p.id !== player.id),
+      players: state.players.filter((p) => p.id !== playerId),
     }));
     set({ player: undefined });
   },

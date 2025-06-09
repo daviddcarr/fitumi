@@ -1,4 +1,4 @@
-import ButtonCopyUrl from "@components/ButtonCopyUrl";
+import ButtonCopyUrl from "@components/Buttons/ButtonCopyUrl";
 import CanvasBackground from "@components/CanvasBackground";
 import PlayerList from "@components/PlayerList";
 import { getRandomSubject } from "@data/subject-sets";
@@ -13,13 +13,14 @@ import {
   FaDiceD20,
   FaEdit,
   FaRegEdit,
-  FaInfoCircle,
-  FaImages,
 } from "react-icons/fa";
 import { MdOutlineTimer } from "react-icons/md";
 import { FaArrowRotateRight } from "react-icons/fa6";
 import { IoMdArrowDropupCircle } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import ButtonRefresh from "@components/Buttons/ButtonRefresh";
+import ButtonInfo from "@components/Buttons/ButtonInfo";
+import ButtonGallery from "@components/Buttons/ButtonGallery";
 
 export default function PlayerLobby() {
   const {
@@ -32,8 +33,6 @@ export default function PlayerLobby() {
     setReady,
     startGame,
     setGameMaster,
-    setShowInfo,
-    setShowGallery,
     setStrokeCount,
     setVotingTime,
   } = useGame();
@@ -47,7 +46,7 @@ export default function PlayerLobby() {
 
   const [isFirstPlayer, setIsFirstPlayer] = useState<boolean>(false);
   const [isGameMaster, setIsGameMaster] = useState<boolean>(false);
-  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
   const [subject, setSubject] = useState<string>(currentSubject || "");
   const [showSubjectEditor, setShowSubjectEditor] = useState<boolean>(false);
   const [showAdvancedEditor, setShowAdvancedEditor] = useState<boolean>(false);
@@ -65,7 +64,10 @@ export default function PlayerLobby() {
       setIsFirstPlayer(false);
     }
 
-    if (!gameMaster) return;
+    if (!gameMaster) {
+      setIsGameMaster(false);
+      return;
+    }
     if (gameMaster?.id === player?.id) {
       setIsGameMaster(true);
     } else {
@@ -82,13 +84,17 @@ export default function PlayerLobby() {
       (p) => readiness[p.id] && !p.isObserver
     );
     if (activePlayers.length < 3) {
-      setSuggestion(`Invite ${3 - activePlayers.length} More Players`);
+      setHint(
+        `Invite ${3 - activePlayers.length} More Player${
+          3 - activePlayers.length > 1 ? "s" : ""
+        }`
+      );
     } else if (readyPlayers.length < players.length) {
-      setSuggestion(`${readyPlayers.length}/${players.length} Ready`);
+      setHint(`${readyPlayers.length}/${players.length} Ready`);
     } else if (gameMaster && !currentSubject) {
-      setSuggestion("Set a Subject");
+      setHint("Set a Subject");
     } else {
-      setSuggestion(null);
+      setHint(null);
     }
 
     if (!gameMaster) {
@@ -110,31 +116,19 @@ export default function PlayerLobby() {
       <div className="z-10 w-full h-full sm:flex justify-center items-center p-2 overflow-scroll">
         <div className="p-4 bg-blurred z-10 max-w-sm max-h-[80vh] overflow-scroll mx-auto space-y-4 w-full">
           <div className="flex gap-2 items-center justify-between">
-            <h1 className="text-2xl sm:text-3xl tracking-wider font-semibold font-heading text-purple-800 leading-none ">
+            <h1 className="text-2xl border-b-2 border-purple-300 pb-4 w-full sm:text-3xl tracking-wider font-semibold font-heading text-purple-800 leading-none ">
               {state.name}
             </h1>
-            <div className="flex items-center gap-2">
-              <ButtonCopyUrl />
-              <button
-                onClick={() => setShowInfo(true)}
-                className="p-1 text-purple-900 hover:text-purple-600 cursor-pointer"
-              >
-                <FaInfoCircle className="text-2xl" />
-              </button>
-
-              {previousArt.length > -1 && (
-                <button
-                  className="p-1 text-purple-900 hover:text-purple-600 cursor-pointer"
-                  onClick={() => setShowGallery(true)}
-                >
-                  <FaImages className="text-2xl" />
-                </button>
-              )}
-            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <ButtonCopyUrl className="sm:mr-auto" />
+            <ButtonInfo />
+            <ButtonGallery />
+            <ButtonRefresh />
           </div>
 
           {/* Player List */}
-          <PlayerList canEdit={!!gameMaster} isLobby />
+          <PlayerList canEdit={!!gameMaster} isLobby hint={hint || undefined} />
 
           {/* Subject Entry for Game Master */}
           {isGameMaster && (
@@ -355,20 +349,13 @@ export default function PlayerLobby() {
           )}
 
           <button
-            className="w-full bg-red-700 hover:bg-red-900 text-white p-2 rounded-full cursor-pointer"
+            className="w-full bg-gray-700  hover:bg-red-900 text-white p-2 rounded-full cursor-pointer"
             onClick={() => {
               leave().then(() => navigate(`/${roomCode}`));
             }}
           >
             Leave
           </button>
-
-          {/* Suggestion */}
-          {suggestion && (
-            <div className="text-center">
-              <p className="text-sm text-purple-700">{suggestion}</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
