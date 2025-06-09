@@ -38,6 +38,7 @@ interface GameActions {
     leftHanded?: boolean,
     asObserver?: boolean
   ) => Promise<Player | null>;
+  leave: () => Promise<void>;
   loadPlayer: (roomId: string, playerSlug: string) => Promise<void>;
   nextRound: () => Promise<void>;
   setGameMaster: (player: Player | null) => Promise<void>;
@@ -50,7 +51,6 @@ interface GameActions {
   subscribe: () => void;
   unsubscribe: () => void;
   updatePlayer: (player: Player) => Promise<void>;
-
   setShowInfo: (show: boolean) => void;
   setShowGallery: (show: boolean) => void;
 }
@@ -170,6 +170,20 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     }
 
     return data;
+  },
+
+  leave: async () => {
+    const { roomId, player } = get();
+    if (!roomId || !player) return;
+    const { error } = await supabase
+      .from("players")
+      .delete()
+      .eq("id", player.id);
+    if (error) return;
+    set((state) => ({
+      players: state.players.filter((p) => p.id !== player.id),
+    }));
+    set({ player: undefined });
   },
 
   loadPlayer: async (roomId: string, playerSlug: string) => {
@@ -470,6 +484,21 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
           set((state) => ({
             players: state.players.map((p) =>
               p.id === payload.new.id ? (payload.new as Player) : p
+            ),
+          }))
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "players",
+          filter: `room_id=eq.${roomId}`,
+        },
+        (payload) =>
+          set((state) => ({
+            players: state.players.filter(
+              (p) => p.id !== (payload.old as Player).id
             ),
           }))
       )

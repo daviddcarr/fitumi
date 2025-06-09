@@ -20,7 +20,13 @@ export default function CanvasBackground() {
   const animationFrameRef = useRef<number>(0);
   const spawnTimerRef = useRef<number>(0);
 
+  const strokeCountRef = useRef<number>(0);
+  const isResettingRef = useRef<boolean>(false);
+  const fadeProgressRef = useRef<number>(0);
+
   const MAX_ACTIVE_STROKES = 50;
+  const STROKES_PER_CYCLE = 10;
+  const RESET_FADE_FRAME = 60;
 
   const resizeCanvas = () => {
     const canvas = canvasRef.current;
@@ -114,15 +120,30 @@ export default function CanvasBackground() {
     const W = canvas.clientWidth;
     const H = canvas.clientHeight;
 
-    // Add a slight blur every frame to soften the strokes over time
-    ctx.save();
-    ctx.filter = "blur(0.5px)";
-    ctx.drawImage(canvas, 0, 0, W, H);
-    ctx.restore();
+    if (isResettingRef.current) {
+      fadeProgressRef.current += 1 / RESET_FADE_FRAME;
+      const alpha = Math.min(fadeProgressRef.current, 1);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fillRect(0, 0, W, H);
 
-    // Add translucent white rectangle over entire canvas to slowly fade old strokes
-    ctx.fillStyle = "rgba(255, 255, 255, 0.01)";
-    ctx.fillRect(0, 0, W, H);
+      if (fadeProgressRef.current >= 1) {
+        ctx.clearRect(0, 0, W, H);
+        strokesRef.current = [];
+        strokeCountRef.current = 0;
+        isResettingRef.current = false;
+        fadeProgressRef.current = 0;
+      }
+    } else {
+      // Add a slight blur every frame to soften the strokes over time
+      ctx.save();
+      ctx.filter = "blur(0.5px)";
+      ctx.drawImage(canvas, 0, 0, W, H);
+      ctx.restore();
+
+      // Add translucent white rectangle over entire canvas to slowly fade old strokes
+      ctx.fillStyle = "rgba(255, 255, 255, 0.01)";
+      ctx.fillRect(0, 0, W, H);
+    }
 
     const strokes = strokesRef.current;
     for (let i = strokes.length - 1; i >= 0; i--) {
@@ -137,12 +158,19 @@ export default function CanvasBackground() {
       drawPartialStroke(ctx, s, s.progress);
     }
 
-    spawnTimerRef.current -= 1;
-    if (spawnTimerRef.current <= 0) {
-      if (strokes.length < MAX_ACTIVE_STROKES) {
-        strokes.push(createCurve());
+    if (!isResettingRef.current) {
+      spawnTimerRef.current -= 1;
+
+      if (spawnTimerRef.current <= 0) {
+        if (strokes.length < MAX_ACTIVE_STROKES) {
+          strokes.push(createCurve());
+          strokeCountRef.current += 1;
+          if (strokeCountRef.current >= STROKES_PER_CYCLE) {
+            isResettingRef.current = true;
+          }
+        }
+        spawnTimerRef.current = 90 + Math.random() * 90;
       }
-      spawnTimerRef.current = 90 + Math.random() * 90;
     }
 
     animationFrameRef.current = requestAnimationFrame(animate);

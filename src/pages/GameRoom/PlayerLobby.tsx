@@ -19,12 +19,15 @@ import {
 import { MdOutlineTimer } from "react-icons/md";
 import { FaArrowRotateRight } from "react-icons/fa6";
 import { IoMdArrowDropupCircle } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 
 export default function PlayerLobby() {
   const {
     player,
     players,
     state,
+    roomCode,
+    leave,
     submitSubject,
     setReady,
     startGame,
@@ -48,6 +51,7 @@ export default function PlayerLobby() {
   const [subject, setSubject] = useState<string>(currentSubject || "");
   const [showSubjectEditor, setShowSubjectEditor] = useState<boolean>(false);
   const [showAdvancedEditor, setShowAdvancedEditor] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setSubject(currentSubject || "");
@@ -349,6 +353,15 @@ export default function PlayerLobby() {
               </button>
             </>
           )}
+
+          <button
+            className="w-full bg-red-700 hover:bg-red-900 text-white p-2 rounded-full cursor-pointer"
+            onClick={() => {
+              leave().then(() => navigate(`/${roomCode}`));
+            }}
+          >
+            Leave
+          </button>
 
           {/* Suggestion */}
           {suggestion && (
