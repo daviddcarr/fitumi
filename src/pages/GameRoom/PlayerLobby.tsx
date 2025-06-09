@@ -13,14 +13,14 @@ import {
   FaDiceD20,
   FaEdit,
   FaRegEdit,
-  FaInfoCircle,
-  FaImages,
 } from "react-icons/fa";
 import { MdOutlineTimer } from "react-icons/md";
 import { FaArrowRotateRight } from "react-icons/fa6";
 import { IoMdArrowDropupCircle } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import ButtonRefresh from "@components/Buttons/ButtonRefresh";
+import ButtonInfo from "@components/Buttons/ButtonInfo";
+import ButtonGallery from "@components/Buttons/ButtonGallery";
 
 export default function PlayerLobby() {
   const {
@@ -33,8 +33,6 @@ export default function PlayerLobby() {
     setReady,
     startGame,
     setGameMaster,
-    setShowInfo,
-    setShowGallery,
     setStrokeCount,
     setVotingTime,
   } = useGame();
@@ -124,22 +122,8 @@ export default function PlayerLobby() {
           </div>
           <div className="flex items-center gap-2">
             <ButtonCopyUrl className="sm:mr-auto" />
-
-            <button
-              onClick={() => setShowInfo(true)}
-              className="p-1 text-purple-900 hover:text-purple-600 cursor-pointer"
-            >
-              <FaInfoCircle className="text-2xl" />
-            </button>
-            {previousArt.length > 0 && (
-              <button
-                className="p-1 text-purple-900 hover:text-purple-600 cursor-pointer"
-                onClick={() => setShowGallery(true)}
-              >
-                <FaImages className="text-2xl" />
-              </button>
-            )}
-
+            <ButtonInfo />
+            <ButtonGallery />
             <ButtonRefresh />
           </div>
 
