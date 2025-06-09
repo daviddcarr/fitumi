@@ -4,18 +4,21 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoHandLeft, IoHandRight } from "react-icons/io5";
 import classNames from "classnames";
+import { getAvailableColors } from "@data/constants";
 
 export default function PlayerJoin() {
   const { roomCode } = useParams();
 
-  const { roomId, state, join } = useGame();
+  const { roomId, state, join, players } = useGame();
   const [name, setName] = useState<string>("");
   const [leftHanded, setLeftHanded] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleJoin = async () => {
     if (!roomId || !name.trim()) return;
-    join(name, leftHanded).then((newPlayer) => {
+    const allColorsUsed = getAvailableColors(players).length === 0;
+    const asObserver = state.status !== "lobby" || allColorsUsed;
+    join(name, leftHanded, asObserver).then((newPlayer) => {
       navigate(`/${roomCode}/${newPlayer?.slug ?? ""}`);
     });
   };

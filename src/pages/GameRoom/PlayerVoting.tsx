@@ -11,18 +11,21 @@ export default function PlayerVoting() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const timerRef = useRef<number>(0);
 
-  let nonGM: Player[];
+  let activePlayers: Player[];
   let isGM: boolean;
   if (state.gameMaster && player) {
-    nonGM = players.filter((p) => p.id !== state.gameMaster!.id);
+    activePlayers = players.filter(
+      (p) => p.id !== state.gameMaster!.id && !p.isObserver
+    );
     isGM = player.id === state.gameMaster!.id;
   } else {
-    nonGM = players.slice();
+    activePlayers = players.filter((p) => !p.isObserver);
     isGM = false;
   }
+  const isObserver = player ? player.isObserver : true;
 
   const votesSoFar = Object.keys(state.votes ?? {}).length;
-  const votesNeeded = nonGM.length;
+  const votesNeeded = activePlayers.length;
 
   useEffect(() => {
     if (!state.votingDeadline) return;
@@ -68,9 +71,9 @@ export default function PlayerVoting() {
         <h2 className="text-3xl sm:text-5xl font-heading font-semibold text-white">
           Who's Faking It?
         </h2>
-        {!isGM && !hasVoted && (
+        {!isGM && !isObserver && !hasVoted && (
           <div className="flex flex-col sm:flex-row justify-center items-center md:grid-cols-3 gap-4 w-full py-4">
-            {nonGM
+            {activePlayers
               .filter((p) => p.id !== player.id)
               .map((p) => {
                 const pColor = getColor(p.color);
@@ -90,7 +93,7 @@ export default function PlayerVoting() {
           </div>
         )}
 
-        {isGM && (
+        {(isGM || isObserver) && (
           <h3 className="text-white mb-4">Waiting for players to vote...</h3>
         )}
       </div>

@@ -71,8 +71,12 @@ export default function PlayerLobby() {
 
   useEffect(() => {
     if (players.length === 0) return;
-    const activePlayers = players.filter((p) => p.id !== gameMaster?.id);
-    const readyPlayers = players.filter((p) => readiness[p.id]);
+    const activePlayers = players.filter(
+      (p) => p.id !== gameMaster?.id && !p.isObserver
+    );
+    const readyPlayers = players.filter(
+      (p) => readiness[p.id] && !p.isObserver
+    );
     if (activePlayers.length < 3) {
       setSuggestion(`Invite ${3 - activePlayers.length} More Players`);
     } else if (readyPlayers.length < players.length) {
@@ -84,7 +88,9 @@ export default function PlayerLobby() {
     }
 
     if (!gameMaster) {
-      const allReady = players.every((p) => readiness[p.id]);
+      const allReady = players
+        .filter((p) => !p.isObserver)
+        .every((p) => readiness[p.id]);
       if (allReady) {
         startGame();
       }
@@ -328,8 +334,12 @@ export default function PlayerLobby() {
             <>
               <button
                 disabled={
-                  players.filter((p) => p.id !== gameMaster?.id).length < 3 ||
-                  !players.every((p) => readiness[p.id]) ||
+                  players.filter(
+                    (p) => p.id !== gameMaster?.id && !p.isObserver
+                  ).length < 3 ||
+                  !players
+                    .filter((p) => !p.isObserver)
+                    .every((p) => readiness[p.id]) ||
                   (gameMaster && !currentSubject)
                 }
                 className="w-full bg-purple-700 hover:bg-purple-900 text-white py-2 rounded-full cursor-pointer disabled:cursor-auto disabled:opacity-50"
