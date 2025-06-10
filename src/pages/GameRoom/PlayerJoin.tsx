@@ -34,7 +34,10 @@ export default function PlayerJoin() {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div
+      className="relative w-full h-screen overflow-hidden"
+      style={{ height: "100dvh" }}
+    >
       <CanvasBackground />
 
       <div className="w-full h-full flex justify-center items-center">

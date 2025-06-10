@@ -110,7 +110,10 @@ export default function PlayerLobby() {
   if (!player) return null;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div
+      className="relative w-full h-screen overflow-hidden"
+      style={{ height: "100dvh" }}
+    >
       <CanvasBackground />
 
       <div className="z-10 w-full h-full sm:flex justify-center items-center p-2 overflow-scroll">
