@@ -54,6 +54,7 @@ const PlayerArtboard = () => {
           ? "lg:grid-cols-[1fr_auto]"
           : "lg:grid-cols-[auto_1fr]"
       )}
+      style={{ minHeight: "100dvh" }}
     >
       <div className="lg:order-1 min-h-[75vh] lg:max-h-screen max-w-screen">
         {player && state && players.length > 0 && <CanvasBoard />}

@@ -66,7 +66,10 @@ export default function PlayerVoting() {
   const hasVoted = state.votes && !!state.votes[player.id];
 
   return (
-    <div className="min-h-screen w-full bg-purple-950 overflow-scroll">
+    <div
+      className="min-h-screen w-full bg-purple-950 overflow-scroll"
+      style={{ minHeight: "100dvh" }}
+    >
       <div className="px-2 py-4 flex flex-col items-center justify-center">
         <h2 className="text-3xl sm:text-5xl font-heading font-semibold text-white">
           Who's Faking It?

@@ -17,7 +17,10 @@ export default function PlayerResults() {
   const fakeArtistColor = getColor(fakeArtist?.color);
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center p-8 bg-purple-950">
+    <div
+      className="flex flex-col min-h-screen items-center justify-center p-8 bg-purple-950"
+      style={{ minHeight: "100dvh" }}
+    >
       <h2 className="text-3xl sm:text-4xl tracking-wider font-bold mb-4 text-white font-heading">
         {outcomeMsg}
       </h2>
