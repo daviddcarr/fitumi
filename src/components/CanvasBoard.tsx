@@ -23,6 +23,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
   const [currentPlayerColor, setCurrentPlayerColor] = useState<PlayerColor>();
+  const [showYourTurn, setShowYourTurn] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -36,13 +37,25 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (currentPlayer) {
       setCurrentPlayerColor(getColor(currentPlayer.color));
     }
   }, [currentPlayer]);
+
+  useEffect(() => {
+    if (currentPlayer?.id === player?.id) {
+      setShowYourTurn(true);
+      const t = window.setTimeout(() => {
+        setShowYourTurn(false);
+      }, 3000);
+      return () => {
+        window.clearTimeout(t);
+      }
+    }
+  }, [currentPlayer, player]);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -208,6 +221,20 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
             </h2>
           </div>
         )}
+
+        <div className="absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max">
+          {currentPlayer?.id === player?.id && !readOnly && (
+            <div className={classNames(
+                "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max",
+                "transition-opacity duration-300 ease-out",
+                showYourTurn ? "opacity-100" : "opacity-0"
+              )}>
+              <h2 className="font-heading text-purple-800 text-5xl animate-bounce">
+                  Your Turn!
+              </h2>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

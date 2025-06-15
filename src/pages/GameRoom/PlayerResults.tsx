@@ -21,6 +21,8 @@ export default function PlayerResults() {
       className="flex flex-col min-h-screen items-center justify-center p-8 bg-purple-950"
       style={{ minHeight: "100dvh" }}
     >
+      <img src="/logo-white.png" className="w-16 mb-4" alt="Logo" />
+      <hr className="border-white/20 w-full max-w-md mx-auto mb-2" />
       <h2 className="text-3xl sm:text-4xl tracking-wider font-bold mb-4 text-white font-heading">
         {outcomeMsg}
       </h2>
@@ -28,7 +30,7 @@ export default function PlayerResults() {
       {/* Fake Artist Identity */}
       {fakeArtist && (
         <div className="mb-6 w-full max-w-md text-center">
-          <h3 className="text-2xl font-semibold font-heading  mb-2">
+          <h3 className="text-2xl font-semibold font-heading  mb-2">            
             <span
               className={classNames(
                 "inline-block px-3 font-heading tracking-wide rounded-full",
@@ -52,12 +54,17 @@ export default function PlayerResults() {
           {ranked.map((pid) => {
             const p = players.find((x) => x.id === pid)!;
             const count = voteCounts[pid] || 0;
+            const color = getColor(p.color);
             return (
               <li
                 key={pid}
-                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-full mb-1"
+                className="flex justify-between p-2 pr-4 gap-2 items-center bg-purple-900 border-0 text-white rounded-full mb-1"
               >
-                <span className="font-medium">{p?.name}</span>
+                <div className={classNames(
+                  "w-8 h-8 rounded-full",
+                  color.bg
+                )}/>
+                <span className="font-medium grow">{p?.name}</span>
                 <span className="text-purple-400">
                   {count} vote{count !== 1 ? "s" : ""}
                 </span>
@@ -75,12 +82,18 @@ export default function PlayerResults() {
         <ul className="divide-y divide-gray-200">
           {players.map((p) => {
             const sc = scoreboard[p.id] || 0;
+            const color = getColor(p.color);
+
             return (
               <li
                 key={p.id}
-                className="flex justify-between py-2 px-4 bg-purple-900 border-0 text-white rounded-full mb-1"
+                className="flex justify-between items-center gap-2 p-2 pr-4 bg-purple-900 border-0 text-white rounded-full mb-1"
               >
-                <span>{p.name}</span>
+                <div className={classNames(
+                  "w-8 h-8 rounded-full",
+                  color.bg
+                )}/>
+                <span className="grow">{p.name}</span>
                 <span className="font-semibold">{sc}</span>
               </li>
             );
