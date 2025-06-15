@@ -11,6 +11,7 @@ interface CanvasBoardProps {
 
 const BORDER_PADDING = 20;
 const PADDING_DOUBLED = BORDER_PADDING * 2;
+const MIN_STROKE_RATIO = 0.1;
 
 export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const { state, player, players, addStroke } = useGame();
@@ -21,9 +22,46 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
   const [canvasSize, setCanvasSize] = useState<number>(0);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
   const [currentPlayerColor, setCurrentPlayerColor] = useState<PlayerColor>();
   const [showYourTurn, setShowYourTurn] = useState(false);
+  
+  const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
+  const [strokeLengthPx, setStrokeLengthPx] = useState(0);
+  const [minLengthPx, setMinLengthPx] = useState(0);
+
+  useEffect(() => {
+    console.log(`minLengthPx: ${minLengthPx}, strokeLengthPx: ${strokeLengthPx}`);
+  }, [minLengthPx, strokeLengthPx]);
+
+  const toPoint = (e: PointerEvent) => {
+    // const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const rect = canvasRef.current!.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) / canvasSize,
+      y: (e.clientY - rect.top) / canvasSize,
+    };
+  }
+
+  const drawSegment = (p1: Point, p2: Point, color: string, width: number) => {
+    const ctx = canvasRef.current!.getContext("2d")!;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(p1.x * canvasSize, p1.y * canvasSize);
+    ctx.lineTo(p2.x * canvasSize, p2.y * canvasSize);
+    ctx.stroke();
+  }
+
+  const redrawStrokes = () => {
+    const ctx = canvasRef.current!.getContext("2d")!;
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
+    strokes.forEach((s) => {
+      for (let i = 1; i < s.points.length - 1; i++) {
+        drawSegment(s.points[i - 1], s.points[i], s.color, 2);
+      }
+    });
+  }
+
 
   useEffect(() => {
     const container = containerRef.current;
@@ -64,6 +102,9 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     canvas.width = canvasSize;
     canvas.height = canvasSize;
 
+    const diag = Math.hypot(canvasSize, canvasSize);
+    setMinLengthPx(diag * MIN_STROKE_RATIO);
+
     const context = canvas.getContext("2d");
     if (!context) return;
 
@@ -72,40 +113,16 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     // Draw Saved Strokes
     strokes.forEach((stroke) => {
       const hex = getColor(stroke.color).hex;
-      context.strokeStyle = hex;
-      context.lineWidth = 2;
-      context.beginPath();
-
       stroke.points.forEach((point, index) => {
-        const x = point.x * canvasSize;
-        const y = point.y * canvasSize;
-
-        if (index === 0) {
-          context.moveTo(x, y);
-        } else {
-          context.lineTo(x, y);
-        }
+        drawSegment(point, stroke.points[index - 1] || point, hex, 2);
       });
-      context.stroke();
     });
 
     // Draw Current Strokes
     if (currentStroke.length > 0 && currentPlayer) {
-      context.strokeStyle = currentPlayerColor?.hex || "black";
-      context.lineWidth = 2;
-      context.beginPath();
-
       currentStroke.forEach((point, index) => {
-        const x = point.x * canvasSize;
-        const y = point.y * canvasSize;
-
-        if (index === 0) {
-          context.moveTo(x, y);
-        } else {
-          context.lineTo(x, y);
-        }
+        drawSegment(point, currentStroke[index - 1] || point, currentPlayerColor?.hex || "black", 2);
       });
-      context.stroke();
     }
   }, [strokes, currentStroke, players, currentPlayer, canvasSize]);
 
@@ -140,19 +157,17 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
 
     e.preventDefault();
 
-    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const rawX = e.clientX - rect.left;
-    const rawY = e.clientY - rect.top;
+    const pNew = toPoint(e.nativeEvent);
+    const pLast = currentStroke[currentStroke.length - 1];
 
-    const relX = rawX / canvasSize;
-    const relY = rawY / canvasSize;
+    const dx = (pNew.x - pLast.x) * canvasSize;
+    const dy = (pNew.y - pLast.y) * canvasSize;
+    const dist = Math.hypot(dx, dy);
 
+    setStrokeLengthPx((len) => len + dist);
     setCurrentStroke((prevStroke) => [
       ...prevStroke,
-      {
-        x: relX,
-        y: relY,
-      },
+      pNew
     ]);
   };
 
@@ -162,8 +177,13 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     setIsDrawing(false);
 
     if (currentStroke.length === 0) return;
-    await addStroke(currentStroke);
+    if (strokeLengthPx >= minLengthPx) {
+      await addStroke(currentStroke);
+    } else {
+      redrawStrokes();
+    }
     setCurrentStroke([]);
+    setStrokeLengthPx(0);
   };
 
   return (
@@ -171,6 +191,18 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
       ref={containerRef}
       className="w-full h-full p-2 flex items-center justify-center bg-slate-200 relative"
     >
+      {currentPlayer?.id === player?.id && (
+        <div className="absolute top-0 left-0 right-0 w-full h-2 bg-slate-300">
+          <div className={classNames(
+            "h-full",
+            currentPlayerColor?.bg
+          )} 
+          style={{
+            width: `${strokeLengthPx / minLengthPx * 100}%`,}}
+          />
+        </div>
+      )}
+
       <div
         style={{
           width: `${canvasSize + BORDER_PADDING / 2}px`,
