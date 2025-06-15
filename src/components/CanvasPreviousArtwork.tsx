@@ -71,37 +71,89 @@ const CanvasPreviousArtwork = ({ art }: CanvasPreviousArtworkProps) => {
     });
   }, [strokes]);
 
+
   const downloadAtSize = (size: number, filename: string) => {
-    const offscreen = document.createElement("canvas");
-    offscreen.width = size;
-    offscreen.height = size;
+    const borderW = Math.round(size * 0.02);
+    const bottomH = Math.round(size * 0.1);
+    const radius = borderW * 0.7;
+    const artW = size - borderW * 2;
+    const artH = size - bottomH - borderW;
+    const padding = borderW * 1.5;
 
-    const offscreenCtx = offscreen.getContext("2d");
-    if (!offscreenCtx) return;
+    const off = document.createElement("canvas");
+    off.width = size;
+    off.height = size;
+    const ctx = off.getContext("2d");
+    if (!ctx) return;
 
-    offscreenCtx.fillStyle = "white";
-    offscreenCtx.fillRect(0, 0, size, size);
+    // Purple BG
+    ctx.fillStyle = "#6600cc";
+    ctx.fillRect(0, 0, size, size);
 
+    // DRAW TEXT
+    // Fonts
+    ctx.fillStyle = "white";
+    ctx.textBaseline = "middle";
+    ctx.font = `${bottomH * 0.45}px "WDXL Lubrifont TC"`;
+    ctx.letterSpacing = `${bottomH * 0.025}px`;
+
+    // Logo
+    ctx.textAlign = "left";
+    ctx.fillText("FITUMI", padding, size - bottomH / 2);
+
+    // Subject
+    ctx.textAlign = "center";
+    ctx.fillText(`"${subject}"`, size / 2, size - bottomH / 2);
+
+    // Room Name
+    ctx.textAlign = "right";
+    ctx.fillText(
+      state.name ?? "",
+      size - padding,
+      size - bottomH / 2
+    )
+
+    // DRAW ART
+    // Canvas
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(
+        borderW,
+        borderW,
+        artW,
+        artH,
+        radius,
+      )
+      ctx.fillStyle = "white";
+      ctx.fill();
+    }
+
+    // Strokes
     strokes.forEach((stroke) => {
+      const r = artH / size;
+      const sidePadding = (size - artH) / 2;
+
       const color = getColor(stroke.color);
-      offscreenCtx.strokeStyle = color.hex;
-      offscreenCtx.lineWidth = (size / BASE_SIZE) * 1;
-      offscreenCtx.beginPath();
+       ctx.strokeStyle = color.hex;
+       ctx.lineWidth = (size / BASE_SIZE) * 1;
+       ctx.beginPath();
 
       stroke.points.forEach((point, index) => {
-        const x = point.x * size;
-        const y = point.y * size;
+        // Scale Strokes to fit insize inner canvas
+        const x = ((point.x * size) * r) + sidePadding;
+        const y = ((point.y * size) * r) + borderW;
 
         if (index === 0) {
-          offscreenCtx.moveTo(x, y);
+           ctx.moveTo(x, y);
         } else {
-          offscreenCtx.lineTo(x, y);
+           ctx.lineTo(x, y);
         }
       });
-      offscreenCtx.stroke();
+       ctx.stroke();
     });
 
-    offscreen.toBlob((blob) => {
+    // DOWNLOAD
+    off.toBlob((blob) => {
       if (blob) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -115,7 +167,7 @@ const CanvasPreviousArtwork = ({ art }: CanvasPreviousArtworkProps) => {
     }, "image/png");
 
     setShowDownloadOptions(false);
-  };
+  }
 
   return (
     <div className="relative block group rounded-2xl overflow-hidden cursor-pointer">

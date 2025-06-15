@@ -66,12 +66,15 @@ const PlayerArtboard = () => {
           player.leftHanded ? "lg:order-2" : "lg:order-none"
         )}
       >
+        <img src="/logo-white.png" className="w-16 mx-auto mb-2" alt="Logo" />
+        <hr className="border-white/20" />
+
         <h3 className="text-3xl text-center mb-2 mt-1 tracking-wide font-semibold text-white font-heading ">
           {state.name}
         </h3>
 
         <div className="@container/player-info">
-          <div className="flex flex-col @md/player-info:grid @md/player-info:grid-cols-[auto_1fr] gap-2">
+          <div className="flex flex-col @md/player-info:grid @md/player-info:grid-cols-[auto_1fr] gap-2">    
             <SubjectCard
               subject={
                 !player.isObserver && fakeArtist?.id !== player.id
