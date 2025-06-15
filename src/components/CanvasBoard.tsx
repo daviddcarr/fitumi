@@ -186,18 +186,6 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
       ref={containerRef}
       className="w-full h-full p-2 flex items-center justify-center bg-slate-200 relative"
     >
-      {currentPlayer?.id === player?.id && (
-        <div className="absolute top-0 left-0 right-0 w-full h-2 bg-slate-300">
-          <div className={classNames(
-            "h-full",
-            currentPlayerColor?.bg
-          )} 
-          style={{
-            width: `${strokeLengthPx / minLengthPx * 100}%`,}}
-          />
-        </div>
-      )}
-
       <div
         style={{
           width: `${canvasSize + BORDER_PADDING / 2}px`,
@@ -206,7 +194,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
         className={classNames(
           "rounded-[28px] relative overflow-hidden flex items-center justify-center",
           currentPlayer?.id === player?.id && !readOnly
-            ? "after:animate-spin-background after:z-0 after:block after:absolute after:w-[150%] after:h-[150%] after:inset-[-25%] after:rounded-full after:bg-conic/increasing after:from-violet-700 after:via-lime-300 after:to-violet-700"
+            ? "after:z-0 after:block after:absolute after:animate-spin-background after:w-[150%] after:h-[150%] after:inset-[-25%] after:rounded-full after:bg-conic/increasing after:from-violet-700 after:via-lime-300 after:to-violet-700"
             : "border-2 border-gray-300"
         )}
       >
@@ -220,12 +208,25 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
           onPointerLeave={readOnly ? undefined : handlePointerUp}
           style={{ touchAction: "none" }}
           className={classNames(
-            "rounded-3xl relative z-[1]",
+            "rounded-3xl relative z-[2]",
             currentPlayer?.id === player?.id || readOnly
               ? "bg-white"
               : "bg-transparent"
           )}
         />
+
+        {currentPlayer?.id === player?.id && !readOnly && (
+          <div className={classNames(
+            "z-[1] block absolute pointer-events-none",
+            // !isDrawing && "animate-spin-background w-[150%] h-[150%] inset-[-25%] rounded-full bg-conic/increasing from-violet-700 via-lime-300 to-violet-700",
+            isDrawing && "inset-0 w-full h-full"
+          )}
+          style={isDrawing ? {
+            backgroundImage: `conic-gradient(${currentPlayerColor?.hex} ${strokeLengthPx / minLengthPx * 100}%, transparent 0 100%)`
+          } : {}}
+          />
+        )}
+
       </div>
 
       <div className="w-full h-full pointer-events-none absolute inset-0">

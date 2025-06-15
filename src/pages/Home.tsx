@@ -86,7 +86,7 @@ export default function Home() {
 
           {/* Info Button */}
           <button
-            className="purple-button mx-auto flex items-center gap-2"
+            className="purple-button !pl-2 mx-auto flex items-center gap-2"
             onClick={() => setShowInfo(true)}
           >
             <FaInfoCircle className="text-2xl" /> Learn More
