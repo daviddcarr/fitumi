@@ -90,7 +90,7 @@ export default function PlayerJoin() {
                 </button>
 
                 <button
-                  className="grid grid-cols-2 w-full border-2 border-purple-300 rounded-full overflow-hidden"
+                  className="grid grid-cols-2 w-full cursor-pointer border-2 border-purple-300 rounded-full overflow-hidden"
                   onClick={() => setLeftHanded(!leftHanded)}
                 >
                   <div
