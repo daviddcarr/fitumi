@@ -29,12 +29,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const [strokeLengthPx, setStrokeLengthPx] = useState(0);
   const [minLengthPx, setMinLengthPx] = useState(0);
 
-  useEffect(() => {
-    console.log(`minLengthPx: ${minLengthPx}, strokeLengthPx: ${strokeLengthPx}`);
-  }, [minLengthPx, strokeLengthPx]);
-
   const toPoint = (e: PointerEvent) => {
-    // const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
     const rect = canvasRef.current!.getBoundingClientRect();
     return {
       x: (e.clientX - rect.left) / canvasSize,
