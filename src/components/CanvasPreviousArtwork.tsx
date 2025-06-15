@@ -5,8 +5,6 @@ import classNames from "classnames";
 import { useRef, useEffect, useState } from "react";
 import { FaFileDownload, FaTimes } from "react-icons/fa";
 
-import logoWhite from "/logo-white.png";
-
 interface CanvasPreviousArtworkProps {
   art: PreviousArt;
 }
