@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   IoMdArrowDropleftCircle,
   IoMdArrowDroprightCircle,
@@ -229,17 +229,57 @@ const MODAL_SLIDES: InfoModalSlide[] = [
 
 const Info = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipDistance, setSwipDistance] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right">("right");
+
+  const touchStart = useRef<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const goToNextPage = () => {
+    setSlideDirection("right");
+    setCurrentPage((currentPage + 1) % MODAL_SLIDES.length);
+  };
+  
+  const goToPreviousPage = () => {
+    setSlideDirection("left");
+    setCurrentPage(currentPage > 0 ? currentPage - 1 : MODAL_SLIDES.length - 1);
+  };
+
+  const handleStart = (x: number) => {
+    touchStart.current = x;
+    setIsSwiping(true);
+  }
+
+  const handleMove = (x: number) => {
+    if (!touchStart.current) return;
+    setSwipDistance(x - touchStart.current);
+  }
+
+  const handleEnd = () => {
+    if (swipDistance > minSwipeDistance) {
+      goToPreviousPage();
+    } else if (swipDistance < -minSwipeDistance) {
+      goToNextPage();
+    }
+
+    touchStart.current = null;
+    setSwipDistance(0);
+    setIsSwiping(false);
+  }
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => handleStart(e.targetTouches[0].clientX);
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => handleStart(e.clientX);
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => handleMove(e.targetTouches[0].clientX);
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => handleMove(e.clientX);
 
   return (
     <div className="max-h-[70vh] grid grid-rows-[auto_1fr_auto] overflow-y-scroll space-y-4">
       <div className="grid grid-cols-[auto_1fr_auto] gap-2">
         <button
           className="w-8 h-8 rounded-full flex items-center justify-center text-3xl text-purple-300 hover:text-purple-400 cursor-pointer"
-          onClick={() =>
-            setCurrentPage(
-              currentPage > 0 ? currentPage - 1 : MODAL_SLIDES.length - 1
-            )
-          }
+          onClick={goToPreviousPage}
         >
           <IoMdArrowDropleftCircle />
         </button>
@@ -248,16 +288,33 @@ const Info = () => {
         </h2>
         <button
           className="w-8 h-8 rounded-full flex items-center justify-center text-3xl text-purple-300 hover:text-purple-400 cursor-pointer"
-          onClick={() =>
-            setCurrentPage((currentPage + 1) % MODAL_SLIDES.length)
-          }
+          onClick={goToNextPage}
         >
           <IoMdArrowDroprightCircle />
         </button>
       </div>
 
-      <div className="p-4 border-2 overflow-scroll border-purple-700 bg-purple-800 rounded-3xl">
-        {MODAL_SLIDES[currentPage].content}
+      <div 
+        className="p-4 border-2 overflow-scroll border-purple-700 bg-purple-800 rounded-3xl"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleEnd}
+
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handleEnd}
+        >
+        <div 
+          className={classNames(
+            !isSwiping && slideDirection === "left" ? "animate-slide-in-next" : "",
+            !isSwiping && slideDirection === "right" ? "animate-slide-in-previous" : "",
+          )}
+          style={isSwiping ? {
+            transform: `translateX(${swipDistance}px)`
+          } : {}}
+          >
+          {MODAL_SLIDES[currentPage].content}
+        </div>
       </div>
 
       <div className="flex justify-center gap-2">
