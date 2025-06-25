@@ -35,10 +35,30 @@
   --color-brown-hover: #331a00;
 
   --animate-spin-background: spinBackground 5s linear infinite;
+  --animate-slide-in-previous: slideInPrevious 0.3s ease-in-out;
+  --animate-slide-in-next: slideInNext 0.3s ease-in-out;
 
   @keyframes spinBackground {
     100% {
       transform: rotate(360deg);
+    }
+  }
+
+  @keyframes slideInPrevious {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInNext {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(0);
     }
   }
 }
@@ -50,6 +70,10 @@ input {
 
 .bg-purple-blurred {
   @apply bg-purple-900/90 border-2 border-purple-950 backdrop-blur-sm rounded-2xl;
+}
+
+.bg-light-purple-blurred {
+  @apply bg-purple-300/90 border-2 border-purple-400 backdrop-blur-sm rounded-2xl;
 }
 
 .bg-blurred {
