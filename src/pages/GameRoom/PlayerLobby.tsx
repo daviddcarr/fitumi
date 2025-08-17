@@ -97,7 +97,7 @@ export default function PlayerLobby() {
       setHint(null);
     }
 
-    if (!gameMaster) {
+    if (!gameMaster && isFirstPlayer) {
       const allReady = players
         .filter((p) => !p.isObserver)
         .every((p) => readiness[p.id]);
@@ -105,7 +105,7 @@ export default function PlayerLobby() {
         startGame();
       }
     }
-  }, [gameMaster, readiness, players, startGame, currentSubject]);
+  }, [gameMaster, readiness, players, startGame, currentSubject, isFirstPlayer]);
 
   if (!player) return null;
 
