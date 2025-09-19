@@ -24,7 +24,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPlayerColor, setCurrentPlayerColor] = useState<PlayerColor>();
   const [showYourTurn, setShowYourTurn] = useState(false);
-  
+
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
   const [strokeLengthPx, setStrokeLengthPx] = useState(0);
   const [minLengthPx, setMinLengthPx] = useState(0);
@@ -35,7 +35,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
       x: (e.clientX - rect.left) / canvasSize,
       y: (e.clientY - rect.top) / canvasSize,
     };
-  }
+  };
 
   const drawSegment = (p1: Point, p2: Point, color: string, width: number) => {
     const ctx = canvasRef.current!.getContext("2d")!;
@@ -45,7 +45,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     ctx.moveTo(p1.x * canvasSize, p1.y * canvasSize);
     ctx.lineTo(p2.x * canvasSize, p2.y * canvasSize);
     ctx.stroke();
-  }
+  };
 
   const redrawStrokes = () => {
     const ctx = canvasRef.current!.getContext("2d")!;
@@ -55,8 +55,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
         drawSegment(s.points[i - 1], s.points[i], s.color, 2);
       }
     });
-  }
-
+  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -70,7 +69,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     return () => {
       resizeObserver.disconnect();
     };
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (currentPlayer) {
@@ -78,7 +77,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     }
   }, [currentPlayer]);
 
-  useEffect(() => {
+  useEffect(() => {
     if (currentPlayer?.id === player?.id) {
       setShowYourTurn(true);
       const t = window.setTimeout(() => {
@@ -86,7 +85,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
       }, 3000);
       return () => {
         window.clearTimeout(t);
-      }
+      };
     }
   }, [currentPlayer, player]);
 
@@ -116,7 +115,12 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     // Draw Current Strokes
     if (currentStroke.length > 0 && currentPlayer) {
       currentStroke.forEach((point, index) => {
-        drawSegment(point, currentStroke[index - 1] || point, currentPlayerColor?.hex || "black", 2);
+        drawSegment(
+          point,
+          currentStroke[index - 1] || point,
+          currentPlayerColor?.hex || "black",
+          2
+        );
       });
     }
   }, [strokes, currentStroke, players, currentPlayer, canvasSize]);
@@ -160,10 +164,7 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
     const dist = Math.hypot(dx, dy);
 
     setStrokeLengthPx((len) => len + dist);
-    setCurrentStroke((prevStroke) => [
-      ...prevStroke,
-      pNew
-    ]);
+    setCurrentStroke((prevStroke) => [...prevStroke, pNew]);
   };
 
   const handlePointerUp = async (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -186,47 +187,56 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
       ref={containerRef}
       className="w-full h-full p-2 flex items-center justify-center bg-slate-200 relative"
     >
-      <div
-        style={{
-          width: `${canvasSize + BORDER_PADDING / 2}px`,
-          height: `${canvasSize + BORDER_PADDING / 2}px`,
-        }}
-        className={classNames(
-          "rounded-[28px] relative overflow-hidden flex items-center justify-center",
-          currentPlayer?.id === player?.id && !readOnly
-            ? "after:z-0 after:block after:absolute after:animate-spin-background after:w-[150%] after:h-[150%] after:inset-[-25%] after:rounded-full after:bg-conic/increasing after:from-violet-700 after:via-lime-300 after:to-violet-700"
-            : "border-2 border-gray-300"
-        )}
-      >
-        <canvas
-          ref={canvasRef}
-          width={canvasSize}
-          height={canvasSize}
-          onPointerDown={readOnly ? undefined : handlePointerDown}
-          onPointerMove={readOnly ? undefined : handlePointerMove}
-          onPointerUp={readOnly ? undefined : handlePointerUp}
-          onPointerLeave={readOnly ? undefined : handlePointerUp}
-          style={{ touchAction: "none" }}
+      <div className="flex flex-col gap-2 items-center">
+        <div
+          style={{
+            width: `${canvasSize + BORDER_PADDING / 2}px`,
+            height: `${canvasSize + BORDER_PADDING / 2}px`,
+          }}
           className={classNames(
-            "rounded-3xl relative z-[2]",
-            currentPlayer?.id === player?.id || readOnly
-              ? "bg-white"
-              : "bg-transparent"
+            "rounded-[28px] relative overflow-hidden flex items-center justify-center",
+            currentPlayer?.id === player?.id && !readOnly
+              ? "after:z-0 after:block after:absolute after:animate-spin-background after:w-[150%] after:h-[150%] after:inset-[-25%] after:rounded-full after:bg-conic/increasing after:from-violet-700 after:via-lime-300 after:to-violet-700"
+              : "border-2 border-gray-300"
           )}
-        />
-
-        {currentPlayer?.id === player?.id && !readOnly && (
-          <div className={classNames(
-            "z-[1] block absolute pointer-events-none",
-            // !isDrawing && "animate-spin-background w-[150%] h-[150%] inset-[-25%] rounded-full bg-conic/increasing from-violet-700 via-lime-300 to-violet-700",
-            isDrawing && "inset-0 w-full h-full"
-          )}
-          style={isDrawing ? {
-            backgroundImage: `conic-gradient(${currentPlayerColor?.hex} ${strokeLengthPx / minLengthPx * 100}%, transparent 0 100%)`
-          } : {}}
+        >
+          <canvas
+            ref={canvasRef}
+            width={canvasSize}
+            height={canvasSize}
+            onPointerDown={readOnly ? undefined : handlePointerDown}
+            onPointerMove={readOnly ? undefined : handlePointerMove}
+            onPointerUp={readOnly ? undefined : handlePointerUp}
+            onPointerLeave={readOnly ? undefined : handlePointerUp}
+            style={{ touchAction: "none" }}
+            className={classNames(
+              "rounded-3xl relative z-[2]",
+              currentPlayer?.id === player?.id || readOnly
+                ? "bg-white"
+                : "bg-transparent"
+            )}
           />
-        )}
 
+          {currentPlayer?.id === player?.id && !readOnly && (
+            <div
+              className={classNames(
+                "z-[1] block absolute pointer-events-none",
+                isDrawing && "inset-0 w-full h-full"
+              )}
+              style={
+                isDrawing
+                  ? {
+                      backgroundImage: `conic-gradient(${
+                        currentPlayerColor?.hex
+                      } ${
+                        (strokeLengthPx / minLengthPx) * 100
+                      }%, transparent 0 100%)`,
+                    }
+                  : {}
+              }
+            />
+          )}
+        </div>
       </div>
 
       <div className="w-full h-full pointer-events-none absolute inset-0">
@@ -250,15 +260,34 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
           </div>
         )}
 
+        {currentPlayer?.id === player?.id && (
+          <div
+            className={classNames(
+              "absolute pointer-events-none z-10 bottom-8 left-1/2 transform -translate-x-1/2 w-[200px] h-[30px] rounded-full ring-2 overflow-hidden",
+              currentPlayerColor?.ring
+            )}
+          >
+            <div
+              className="relative top-0 left-0 h-full"
+              style={{
+                backgroundColor: currentPlayerColor?.hex,
+                width: `${(strokeLengthPx / minLengthPx) * 100}%`,
+              }}
+            />
+          </div>
+        )}
+
         <div className="absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max">
           {currentPlayer?.id === player?.id && !readOnly && (
-            <div className={classNames(
+            <div
+              className={classNames(
                 "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max",
                 "transition-opacity duration-300 ease-out",
                 showYourTurn ? "opacity-100" : "opacity-0"
-              )}>
+              )}
+            >
               <h2 className="font-heading text-purple-800 text-5xl animate-bounce">
-                  Your Turn!
+                Your Turn!
               </h2>
             </div>
           )}

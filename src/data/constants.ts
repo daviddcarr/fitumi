@@ -12,6 +12,7 @@ export type PlayerColor = {
   hoverBg: string;
   border: string;
   hoverBorder: string;
+  ring: string;
 };
 export const PLAYER_COLORS: PlayerColor[] = [
   {
@@ -23,6 +24,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-red-hover",
     border: "border-red",
     hoverBorder: "hover:border-red-hover",
+    ring: "ring-red",
   },
   {
     name: "Orange",
@@ -33,6 +35,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-orange-hover",
     border: "border-orange",
     hoverBorder: "hover:border-orange-hover",
+    ring: "ring-orange",
   },
   {
     name: "Yellow",
@@ -43,6 +46,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-yellow-hover",
     border: "border-yellow",
     hoverBorder: "hover:border-yellow-hover",
+    ring: "ring-yellow",
   },
   {
     name: "Lime",
@@ -53,6 +57,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-lime-hover",
     border: "border-lime",
     hoverBorder: "hover:border-lime-hover",
+    ring: "ring-lime",
   },
   {
     name: "Green",
@@ -63,6 +68,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-green-hover",
     border: "border-green",
     hoverBorder: "hover:border-green-hover",
+    ring: "ring-green",
   },
   {
     name: "Teal",
@@ -73,6 +79,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-teal-hover",
     border: "border-teal",
     hoverBorder: "hover:border-teal-hover",
+    ring: "ring-teal",
   },
   {
     name: "Cyan",
@@ -83,6 +90,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-cyan-hover",
     border: "border-cyan",
     hoverBorder: "hover:border-cyan-hover",
+    ring: "ring-cyan",
   },
   {
     name: "Indigo",
@@ -93,6 +101,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-indigo-hover",
     border: "border-indigo",
     hoverBorder: "hover:border-indigo-hover",
+    ring: "ring-indigo",
   },
   {
     name: "Purple",
@@ -103,6 +112,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-purple-hover",
     border: "border-purple",
     hoverBorder: "hover:border-purple-hover",
+    ring: "ring-purple",
   },
   {
     name: "Magenta",
@@ -113,6 +123,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-magenta-hover",
     border: "border-magenta",
     hoverBorder: "hover:border-magenta-hover",
+    ring: "ring-magenta",
   },
   {
     name: "Pink",
@@ -123,6 +134,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-pink-hover",
     border: "border-pink",
     hoverBorder: "hover:border-pink-hover",
+    ring: "ring-pink",
   },
   {
     name: "Brown",
@@ -133,6 +145,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
     hoverBg: "hover:bg-brown-hover",
     border: "border-brown",
     hoverBorder: "hover:border-brown-hover",
+    ring: "ring-brown",
   },
 ];
 
@@ -144,4 +157,4 @@ export const getAvailableColors = (players: Player[]): PlayerColor[] => {
   return PLAYER_COLORS.filter(
     (color) => !players.some((player) => player.color === color.name)
   );
-}
+};
