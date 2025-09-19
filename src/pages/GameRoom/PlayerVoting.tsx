@@ -22,7 +22,7 @@ export default function PlayerVoting() {
     activePlayers = players.filter((p) => !p.isObserver);
     isGM = false;
   }
-  const hostId = activePlayers[0].id;
+  const hostId = activePlayers[0]?.id;
   const canFinalize = isGM || player?.id === hostId;
   const isObserver = player ? player.isObserver : true;
 
