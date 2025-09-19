@@ -224,8 +224,30 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const { state, roomId } = get();
     if (!roomId || !state) return;
     const newState: RoomState = { ...state, votingTime: time };
-    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
-    set({ state: newState });
+    // await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+    // set({ state: newState });
+
+    const { data, error } = await supabase
+      .from("rooms")
+      .update({ state: newState })
+      .eq("id", roomId)
+      .eq("state->>status", "lobby")
+      .select()
+      .single();
+
+    if (error || !data) {
+      // another client already started the game: refresh local state
+      const { data: room } = await supabase
+        .from("rooms")
+        .select("state")
+        .eq("id", roomId)
+        .single();
+
+      if (room) set({ state: room.state as RoomState });
+      return;
+    }
+
+    set({ state: data.state as RoomState });
   },
 
   addStroke: async (points: Point[]) => {
@@ -326,8 +348,31 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       currentSubject: subject,
       currentPlayer: firstPlayer,
     };
-    set({ state: newState });
-    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+
+    // only allow on client to transition from lobby -> in-pgoress
+    const { data, error } = await supabase
+      .from("rooms")
+      .update({ state: newState })
+      .eq("id", roomId)
+      .eq("state->>status", "lobby")
+      .select()
+      .single();
+
+    if (error || !data) {
+      // another client has already started the game; refresh local state
+      const { data: room } = await supabase
+        .from("rooms")
+        .select("state")
+        .eq("id", roomId)
+        .single();
+      if (room) set({ state: room.state as RoomState });
+      return;
+    }
+
+    set({ state: data.state as RoomState });
+
+    // set({ state: newState });
+    // await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
   },
 
   setGameMaster: async (player: Player | null) => {
@@ -378,8 +423,29 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       previousArt: state.previousArt,
     };
 
-    set({ state: newState });
-    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+    // set({ state: newState });
+    // await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+
+    const { data, error } = await supabase
+      .from("rooms")
+      .update({ state: newState })
+      .eq("id", roomId)
+      .eq("state->>status", "results")
+      .select()
+      .single();
+
+    if (error || !data) {
+      // another client already started the game: refresh local state
+      const { data: room } = await supabase
+        .from("rooms")
+        .select("state")
+        .eq("id", roomId)
+        .single();
+      if (room) set({ state: room.state as RoomState });
+      return;
+    }
+
+    set({ state: data.state as RoomState });
   },
 
   finalizeVoting: async () => {
@@ -441,8 +507,28 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       scores: newScores,
     };
 
-    set({ state: newState });
-    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+    // set({ state: newState });
+    // await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+    const { data, error } = await supabase
+      .from("rooms")
+      .update({ state: newState })
+      .eq("id", roomId)
+      .eq("state->>status", "voting")
+      .select()
+      .single();
+
+    if (error || !data) {
+      // another client already started the game: refresh local state
+      const { data: room } = await supabase
+        .from("rooms")
+        .select("state")
+        .eq("id", roomId)
+        .single();
+      if (room) set({ state: room.state as RoomState });
+      return;
+    }
+
+    set({ state: data.state as RoomState });
   },
 
   subscribe: () => {

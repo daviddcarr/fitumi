@@ -22,13 +22,15 @@ export default function PlayerVoting() {
     activePlayers = players.filter((p) => !p.isObserver);
     isGM = false;
   }
+  const hostId = activePlayers[0]?.id;
+  const canFinalize = isGM || player?.id === hostId;
   const isObserver = player ? player.isObserver : true;
 
   const votesSoFar = Object.keys(state.votes ?? {}).length;
   const votesNeeded = activePlayers.length;
 
   useEffect(() => {
-    if (!state.votingDeadline) return;
+    if (!state.votingDeadline || !canFinalize) return;
 
     const msLeft = state.votingDeadline - Date.now();
     if (msLeft <= 0) {
@@ -52,14 +54,14 @@ export default function PlayerVoting() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [state.votingDeadline, finalizeVoting]);
+  }, [state.votingDeadline, finalizeVoting, canFinalize]);
 
   useEffect(() => {
-    if (votesSoFar >= votesNeeded) {
+    if (votesSoFar >= votesNeeded && canFinalize) {
       if (timerRef.current) clearInterval(timerRef.current);
       finalizeVoting();
     }
-  }, [votesSoFar, votesNeeded, finalizeVoting]);
+  }, [votesSoFar, votesNeeded, finalizeVoting, canFinalize]);
 
   if (!player || !state) return null;
 
