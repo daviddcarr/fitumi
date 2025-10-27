@@ -14,7 +14,7 @@ export default interface RoomState {
   name?: string;
   status: RoomStatus;
   readiness: Record<string, boolean>;
-  strokes: Stroke[];
+  strokeCount: number; // Number of strokes in current round (for turn rotation)
   currentSubject: string | null;
   gameMaster?: Player;
   currentPlayer?: Player;
@@ -38,7 +38,7 @@ export const DEFAULT_ROOM_STATE: RoomState = {
   name: "",
   status: "lobby",
   readiness: {},
-  strokes: [],
+  strokeCount: 0,
   currentSubject: null,
   strokesPerPlayer: DEFAULT_STROKES_PER_PLAYER,
   votes: {},

@@ -14,8 +14,8 @@ const PADDING_DOUBLED = BORDER_PADDING * 2;
 const MIN_STROKE_RATIO = 0.1;
 
 export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
-  const { state, player, players, addStroke } = useGame();
-  const { currentPlayer, strokes = [] } = state;
+  const { state, player, players, addStroke, strokes } = useGame();
+  const { currentPlayer } = state;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -260,7 +260,8 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
           </div>
         )}
 
-        {currentPlayer?.id === player?.id && (
+        {/* progress bar / thermometer */}
+        {currentPlayer?.id === player?.id && state.status === "in-progress" && (
           <div
             className={classNames(
               "absolute pointer-events-none z-10 bottom-8 left-1/2 transform -translate-x-1/2 w-[200px] h-[30px] rounded-full ring-2 overflow-hidden",

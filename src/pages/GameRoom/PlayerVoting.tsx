@@ -8,44 +8,51 @@ import classNames from "classnames";
 export default function PlayerVoting() {
   const { player, players, state, submitVote, finalizeVoting } = useGame();
 
-  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const timerRef = useRef<number>(0);
 
-  let activePlayers: Player[];
-  let isGM: boolean;
-  if (state.gameMaster && player) {
-    activePlayers = players.filter(
-      (p) => p.id !== state.gameMaster!.id && !p.isObserver
-    );
-    isGM = player.id === state.gameMaster!.id;
-  } else {
-    activePlayers = players.filter((p) => !p.isObserver);
-    isGM = false;
-  }
+  // Calculate active players and roles safely
+  const activePlayers: Player[] =
+    state?.gameMaster && players
+      ? players.filter(
+          (p) => p.id !== state.gameMaster!.id && !p.isObserver
+        )
+      : players?.filter((p) => !p.isObserver) ?? [];
+
+  const isGM = state?.gameMaster && player ? player.id === state.gameMaster.id : false;
   const hostId = activePlayers[0]?.id;
   const canFinalize = isGM || player?.id === hostId;
-  const isObserver = player ? player.isObserver : true;
+  const isObserver = player?.isObserver ?? true;
 
-  const votesSoFar = Object.keys(state.votes ?? {}).length;
+  const votesSoFar = Object.keys(state?.votes ?? {}).length;
   const votesNeeded = activePlayers.length;
 
   useEffect(() => {
-    if (!state.votingDeadline || !canFinalize) return;
+    if (!state?.votingDeadline) return;
 
     const msLeft = state.votingDeadline - Date.now();
+
+    // If time already expired and this client can finalize, do it now
     if (msLeft <= 0) {
-      finalizeVoting();
+      if (canFinalize) {
+        finalizeVoting();
+      }
       return;
     }
 
+    // Set initial countdown value
     setSecondsLeft(Math.ceil(msLeft / 1000));
 
+    // Start countdown timer for all players
     timerRef.current = window.setInterval(() => {
       const now = Date.now();
       const left = state.votingDeadline! - now;
       if (left <= 0) {
         clearInterval(timerRef.current);
-        finalizeVoting();
+        // Only call finalizeVoting if this client is authorized
+        if (canFinalize) {
+          finalizeVoting();
+        }
       } else {
         setSecondsLeft(Math.ceil(left / 1000));
       }
@@ -54,7 +61,7 @@ export default function PlayerVoting() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [state.votingDeadline, finalizeVoting, canFinalize]);
+  }, [state?.votingDeadline, finalizeVoting, canFinalize]);
 
   useEffect(() => {
     if (votesSoFar >= votesNeeded && canFinalize) {
@@ -63,7 +70,14 @@ export default function PlayerVoting() {
     }
   }, [votesSoFar, votesNeeded, finalizeVoting, canFinalize]);
 
-  if (!player || !state) return null;
+  // Early return if critical data is missing (AFTER all hooks)
+  if (!player || !state || !players || players.length === 0) {
+    return (
+      <div className="min-h-screen w-full bg-purple-950 flex items-center justify-center">
+        <div className="text-white text-xl">Loading voting...</div>
+      </div>
+    );
+  }
 
   const hasVoted = state.votes && !!state.votes[player.id];
 
@@ -107,7 +121,7 @@ export default function PlayerVoting() {
         <CanvasBoard readOnly />
         <div className="absolute z-20 inset-0 flex items-center justify-center">
           <div className="text-5xl font-semibold font-heading text-purple-800/50">
-            {secondsLeft}
+            {secondsLeft !== null ? secondsLeft : "..."}
           </div>
         </div>
         <div className="absolute z-20 bottom-8 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">

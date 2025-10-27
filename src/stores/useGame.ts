@@ -9,6 +9,7 @@ import {
   type RoomStatus,
   type Stroke,
 } from "@lib/interfaces/room-state";
+import type { StrokeInsert, DBStroke } from "@lib/interfaces/database";
 import { getRandomSubject } from "@data/subject-sets";
 import {
   DEFAULT_STROKES_PER_PLAYER,
@@ -23,6 +24,7 @@ interface GameState {
   players: Player[];
   state: RoomState;
   player?: Player;
+  strokes: Stroke[]; // Current round strokes loaded from database
 
   showInfo: boolean;
   showGallery: boolean;
@@ -61,6 +63,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
   players: [] as Player[],
   player: undefined,
   state: DEFAULT_ROOM_STATE,
+  strokes: [],
 
   showInfo: false,
   showGallery: false,
@@ -117,7 +120,22 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       return;
     }
 
-    set({ players: existingPlayers });
+    // Load existing strokes for current round
+    const { data: existingStrokes } = await supabase
+      .from("strokes")
+      .select("player_id, points, color")
+      .eq("room_id", room.id)
+      .order("stroke_order", { ascending: true });
+
+    const strokes: Stroke[] = existingStrokes
+      ? existingStrokes.map((s) => ({
+          playerId: s.player_id,
+          points: s.points,
+          color: s.color,
+        }))
+      : [];
+
+    set({ players: existingPlayers, strokes });
     set({ roomCode: code, roomId: room.id, state: room.state });
   },
 
@@ -254,10 +272,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const { roomId, player, players, state } = get();
     if (!roomId || !player || !players || !state || player.isObserver) return;
 
-    // Build Stroke Data
-    const color = player.color;
-    const newStroke: Stroke = { playerId: player.id, points, color: color };
-
     // Get Next Active Player in Turn Order
     let activePlayers: Player[];
     if (state.gameMaster) {
@@ -270,35 +284,97 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const idx = activePlayers.findIndex((p) => p.id === player.id);
     const nextPlayer = activePlayers[(idx + 1) % activePlayers.length];
 
-    let newState: RoomState = {
-      ...state,
-      strokes: [...(state.strokes ?? []), newStroke],
-      currentPlayer: nextPlayer,
+    const currentStrokeCount = state.strokeCount ?? 0;
+    const newStrokeCount = currentStrokeCount + 1;
+
+    // Insert stroke into database
+    const strokeInsert: StrokeInsert = {
+      room_id: roomId,
+      player_id: player.id,
+      points: points,
+      color: player.color,
+      stroke_order: newStrokeCount,
     };
+
+    await supabase.from("strokes").insert(strokeInsert);
 
     const { strokesPerPlayer } = state;
     const totalNeeded =
       activePlayers.length * (strokesPerPlayer ?? DEFAULT_STROKES_PER_PLAYER);
 
-    if ((newState.strokes?.length ?? 0) >= totalNeeded) {
-      const previousArt: PreviousArt[] = state.previousArt ?? [];
-      previousArt.unshift({
-        subject: state.currentSubject!,
-        strokes: newState.strokes,
-      });
-      const votingTime = newState.votingTime ?? DEFAULT_VOTING_TIME;
+    let newState: RoomState = {
+      ...state,
+      strokeCount: newStrokeCount,
+      currentPlayer: nextPlayer,
+    };
 
-      newState = {
-        ...newState,
-        status: "voting",
-        votes: {},
-        votingDeadline: Date.now() + votingTime * 1000,
-        previousArt: previousArt,
-      };
+    // Check if round is complete
+    if (newStrokeCount >= totalNeeded) {
+      // Small delay to ensure stroke is fully written to database
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Fetch all strokes for archiving
+      const { data: roundStrokes } = await supabase
+        .from("strokes")
+        .select("player_id, points, color")
+        .eq("room_id", roomId)
+        .order("stroke_order", { ascending: true });
+
+      if (roundStrokes) {
+        const strokes: Stroke[] = roundStrokes.map((s) => ({
+          playerId: s.player_id,
+          points: s.points,
+          color: s.color,
+        }));
+
+        const previousArt: PreviousArt[] = state.previousArt ?? [];
+        previousArt.unshift({
+          subject: state.currentSubject!,
+          strokes: strokes,
+        });
+
+        const votingTime = newState.votingTime ?? DEFAULT_VOTING_TIME;
+
+        newState = {
+          ...newState,
+          status: "voting",
+          currentPlayer: undefined, // Clear current player
+          votes: {},
+          votingDeadline: Date.now() + votingTime * 1000,
+          previousArt: previousArt,
+        };
+      }
     }
 
+    // Use optimistic update for stroke count
     set({ state: newState });
-    await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+
+    // Use race condition protection for voting transition
+    if (newStrokeCount >= totalNeeded) {
+      const { data, error } = await supabase
+        .from("rooms")
+        .update({ state: newState })
+        .eq("id", roomId)
+        .eq("state->>status", "in-progress")
+        .select()
+        .single();
+
+      if (error || !data) {
+        // Another client already transitioned to voting, refresh state
+        const { data: room } = await supabase
+          .from("rooms")
+          .select("state")
+          .eq("id", roomId)
+          .single();
+        if (room) set({ state: room.state as RoomState });
+        return;
+      }
+
+      set({ state: data.state as RoomState });
+    } else {
+      // Regular stroke count update
+      await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
+    }
   },
 
   setReady: async (ready: boolean) => {
@@ -329,6 +405,9 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const allReady = active.every((p) => state.readiness[p.id]);
     if (!allReady) return;
 
+    // Delete any existing strokes from previous rounds
+    await supabase.from("strokes").delete().eq("room_id", roomId);
+
     // Pick a fake artist
     const fakeArtist = active[Math.floor(Math.random() * active.length)];
 
@@ -347,6 +426,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       fakeArtist,
       currentSubject: subject,
       currentPlayer: firstPlayer,
+      strokeCount: 0,
     };
 
     // only allow on client to transition from lobby -> in-pgoress
@@ -365,11 +445,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         .select("state")
         .eq("id", roomId)
         .single();
-      if (room) set({ state: room.state as RoomState });
+      if (room) set({ state: room.state as RoomState, strokes: [] });
       return;
     }
 
-    set({ state: data.state as RoomState });
+    set({ state: data.state as RoomState, strokes: [] });
 
     // set({ state: newState });
     // await supabase.from("rooms").update({ state: newState }).eq("id", roomId);
@@ -402,6 +482,9 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const { state, roomId } = get();
     if (!state) return;
 
+    // Delete all strokes from previous round
+    await supabase.from("strokes").delete().eq("room_id", roomId);
+
     const newState: RoomState = {
       ...DEFAULT_ROOM_STATE,
 
@@ -414,7 +497,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       currentPlayer: undefined,
       fakeArtist: undefined,
       currentSubject: null,
-      strokes: [],
+      strokeCount: 0,
       votes: {},
       votingDeadline: null,
       results: undefined,
@@ -445,7 +528,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       return;
     }
 
-    set({ state: data.state as RoomState });
+    set({ state: data.state as RoomState, strokes: [] });
   },
 
   finalizeVoting: async () => {
@@ -557,13 +640,20 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
           table: "rooms",
           filter: `id=eq.${roomId}`,
         },
-        (payload) =>
-          set((state) => ({
-            state: payload.new.state as RoomState,
-            players: state.players.filter(
-              (p) => p.id !== (payload.old as Player).id
-            ),
-          }))
+        (payload) => {
+          const oldState = get().state;
+          const newState = payload.new.state as RoomState;
+
+          // Clear strokes when transitioning to lobby or starting new game
+          const shouldClearStrokes =
+            (oldState.status !== "lobby" && newState.status === "lobby") ||
+            (oldState.status !== "in-progress" && newState.status === "in-progress");
+
+          set({
+            state: newState,
+            ...(shouldClearStrokes && { strokes: [] })
+          });
+        }
       )
       .on(
         "postgres_changes",
@@ -594,6 +684,26 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
               (p) => p.id !== (payload.old as Player).id
             ),
           }))
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "strokes",
+          filter: `room_id=eq.${roomId}`,
+        },
+        (payload) => {
+          const dbStroke = payload.new as DBStroke;
+          const stroke: Stroke = {
+            playerId: dbStroke.player_id,
+            points: dbStroke.points,
+            color: dbStroke.color,
+          };
+          set((state) => ({
+            strokes: [...state.strokes, stroke],
+          }));
+        }
       )
       .subscribe();
   },
