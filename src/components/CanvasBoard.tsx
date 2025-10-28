@@ -4,6 +4,7 @@ import { useGame } from "../stores/useGame";
 import classNames from "classnames";
 import { getColor } from "@data/constants";
 import type { PlayerColor } from "@data/constants";
+import CursorProgressRing from "./CursorProgressRing";
 
 interface CanvasBoardProps {
   readOnly?: boolean;
@@ -14,8 +15,8 @@ const PADDING_DOUBLED = BORDER_PADDING * 2;
 const MIN_STROKE_RATIO = 0.1;
 
 export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
-  const { state, player, players, addStroke } = useGame();
-  const { currentPlayer, strokes = [] } = state;
+  const { state, player, players, addStroke, strokes } = useGame();
+  const { currentPlayer } = state;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,6 +29,10 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
   const [strokeLengthPx, setStrokeLengthPx] = useState(0);
   const [minLengthPx, setMinLengthPx] = useState(0);
+
+  // Cursor position for progress ring
+  const [cursorX, setCursorX] = useState(0);
+  const [cursorY, setCursorY] = useState(0);
 
   const toPoint = (e: PointerEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
@@ -150,6 +155,12 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    // Always update cursor position when it's the player's turn and they're over the canvas
+    if (currentPlayer?.id === player?.id) {
+      setCursorX(e.clientX);
+      setCursorY(e.clientY);
+    }
+
     if (!currentPlayer || !player) return;
     if (currentPlayer.id !== player.id || !isDrawing) return;
     if (canvasSize === 0) return;
@@ -260,23 +271,6 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
           </div>
         )}
 
-        {currentPlayer?.id === player?.id && (
-          <div
-            className={classNames(
-              "absolute pointer-events-none z-10 bottom-8 left-1/2 transform -translate-x-1/2 w-[200px] h-[30px] rounded-full ring-2 overflow-hidden",
-              currentPlayerColor?.ring
-            )}
-          >
-            <div
-              className="relative top-0 left-0 h-full"
-              style={{
-                backgroundColor: currentPlayerColor?.hex,
-                width: `${(strokeLengthPx / minLengthPx) * 100}%`,
-              }}
-            />
-          </div>
-        )}
-
         <div className="absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max">
           {currentPlayer?.id === player?.id && !readOnly && (
             <div
@@ -293,6 +287,15 @@ export default function CanvasBoard({ readOnly = false }: CanvasBoardProps) {
           )}
         </div>
       </div>
+
+      {/* Cursor Progress Ring */}
+      <CursorProgressRing
+        isDrawing={isDrawing}
+        progress={minLengthPx > 0 ? strokeLengthPx / minLengthPx : 0}
+        cursorX={cursorX}
+        cursorY={cursorY}
+        color={currentPlayerColor?.hex || "#000000"}
+      />
     </div>
   );
 }
